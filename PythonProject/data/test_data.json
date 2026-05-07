@@ -1,0 +1,46 @@
+[
+  {
+    "case_name": "tc-001",
+    "url": "/posts",
+    "method": "GET",
+    "expected_status": 200
+  },
+  {
+    "case_name": "tc-002",
+    "url": "/posts",
+    "method": "POST",
+    "request_data": {"json": {"title": "hello", "body": "world", "userId": 1}},
+    "expected_status": 201
+  },
+  {
+    "case_name": "tc-003",
+    "url": "/posts/1",
+    "method": "GET",
+    "expected_status": 200
+  },
+    {
+    "case_name": "tc-004",
+    "url": "/posts/1",
+    "method": "PUT",
+    "expected_status": 200
+  },
+  {
+    "case_name": "tc-005",
+    "url": "/posts/1",
+    "method": "DELETE",
+    "expected_status": 200
+  },
+    {
+    "case_name": "tc-006",
+    "url": "/posts/99999",
+    "method": "GET",
+    "expected_status": 404
+  },
+  {
+    "case_name": "tc-007",
+    "url": "/comments",
+    "method": "GET",
+    "request_data": {"params": {"postId": 1}},
+    "expected_status": 200
+  }
+]
