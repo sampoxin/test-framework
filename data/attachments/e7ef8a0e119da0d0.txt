@@ -1,0 +1,2 @@
+INFO     utils.logger:client.py:37 开始请求: [POST] https://jsonplaceholder.typicode.com/posts params={'json': {'title': 'hello', 'body': 'world', 'userId': 1}}
+INFO     utils.logger:client.py:40 [POST] https://jsonplaceholder.typicode.com/posts 响应状态码:201 耗时:0.191s

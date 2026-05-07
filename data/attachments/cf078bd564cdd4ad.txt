@@ -1,0 +1,2 @@
+INFO     utils.logger:client.py:37 开始请求: [DELETE] https://jsonplaceholder.typicode.com/posts/1 params={}
+INFO     utils.logger:client.py:40 [DELETE] https://jsonplaceholder.typicode.com/posts/1 响应状态码:200 耗时:0.068s
