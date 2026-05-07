@@ -9,6 +9,9 @@ on:                                   # 触发条件
 jobs:                                 # 任务定义
   test:                               # Job 名称
     runs-on: ubuntu-latest            # 运行在 Ubuntu 虚拟机
+    defaults:
+      run:
+        working-directory: PythonProject    # ← 加这个
 
     steps:                            # 步骤列表
       - name: 检出代码
@@ -30,4 +33,4 @@ jobs:                                 # 任务定义
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
-          path: reports/allure-results/
+          path: PythonProject/reports/allure-results/
