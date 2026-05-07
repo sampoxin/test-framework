@@ -1,0 +1,33 @@
+name: API Test CI                    # 流水线名称
+
+on:                                   # 触发条件
+  push:
+    branches: [master]                  # push 到 master 时触发
+  pull_request:
+    branches: [master]                  # PR 到 master 时触发
+
+jobs:                                 # 任务定义
+  test:                               # Job 名称
+    runs-on: ubuntu-latest            # 运行在 Ubuntu 虚拟机
+
+    steps:                            # 步骤列表
+      - name: 检出代码
+        uses: actions/checkout@v4     # 官方 action：拉代码
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 运行测试
+        run: pytest testcases/ --alluredir=reports/allure-results -v
+
+      - name: 上传测试报告
+        if: always()                  # 即使测试失败也执行
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: reports/allure-results/
