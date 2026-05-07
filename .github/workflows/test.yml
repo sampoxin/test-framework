@@ -34,3 +34,20 @@ jobs:                                 # 任务定义
         with:
           name: allure-results
           path: PythonProject/reports/allure-results/
+          
+      - name: 安装 Allure 命令行
+        if: always()
+        run: |
+          wget -qO- https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz | tar xz
+          echo "$PWD/allure-2.27.0/bin" >> $GITHUB_PATH
+
+      - name: 生成 HTML 报告
+        if: always()
+        run: allure generate reports/allure-results -o reports/allure-report --clean
+
+      - name: 发布到 GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: PythonProject/reports/allure-report
