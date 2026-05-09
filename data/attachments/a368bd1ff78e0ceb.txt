@@ -1,0 +1,2 @@
+INFO     utils.logger:client.py:39 开始请求: [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/marketing/questionnaire/submit params={'json': None}
+INFO     utils.logger:client.py:42 [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/marketing/questionnaire/submit 响应结果:{'data': None, 'code': 'SYSTEM_ERROR', 'msg': '', 'errorMsg': '系统异常,请稍后重试', 'success': False} 耗时:0.225s

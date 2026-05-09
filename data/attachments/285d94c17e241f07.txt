@@ -1,2 +1,0 @@
-INFO     utils.logger:client.py:37 开始请求: [GET] https://jsonplaceholder.typicode.com/posts/99999 params={}
-INFO     utils.logger:client.py:40 [GET] https://jsonplaceholder.typicode.com/posts/99999 响应状态码:404 耗时:0.008s

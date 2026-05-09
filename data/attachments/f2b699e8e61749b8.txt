@@ -1,2 +1,0 @@
-2026-05-07 09:59:29,256 - [INFO] - 开始请求: [GET] https://jsonplaceholder.typicode.com/comments params={'params': {'postId': 1}}
-2026-05-07 09:59:29,313 - [INFO] - [GET] https://jsonplaceholder.typicode.com/comments 响应状态码:200 耗时:0.058s

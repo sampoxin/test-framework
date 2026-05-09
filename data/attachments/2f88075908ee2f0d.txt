@@ -1,2 +1,0 @@
-2026-05-07 09:59:29,808 - [INFO] - 开始请求: [GET] https://jsonplaceholder.typicode.com/posts/99999 params={}
-2026-05-07 09:59:29,816 - [INFO] - [GET] https://jsonplaceholder.typicode.com/posts/99999 响应状态码:404 耗时:0.008s

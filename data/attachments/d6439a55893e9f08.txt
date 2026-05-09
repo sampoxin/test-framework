@@ -1,7 +1,0 @@
-INFO     utils.logger:client.py:37 开始请求: [GET] https://jsonplaceholder.typicode.com/comments params={'params': {'postId': 1}}
-INFO     utils.logger:client.py:40 [GET] https://jsonplaceholder.typicode.com/comments 响应状态码:200 耗时:0.005s
-INFO     utils.logger:client.py:76 GET:6
-INFO     utils.logger:client.py:76 POST:1
-INFO     utils.logger:client.py:76 PUT:1
-INFO     utils.logger:client.py:76 DELETE:1
-INFO     utils.logger:client.py:77 总请求数:9
