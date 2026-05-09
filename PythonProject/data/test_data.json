@@ -1,46 +1,43 @@
-[
-  {
-    "case_name": "tc-001",
-    "url": "/posts",
-    "method": "GET",
-    "expected_status": 200
-  },
-  {
-    "case_name": "tc-002",
-    "url": "/posts",
-    "method": "POST",
-    "request_data": {"json": {"title": "hello", "body": "world", "userId": 1}},
-    "expected_status": 201
-  },
-  {
-    "case_name": "tc-003",
-    "url": "/posts/1",
-    "method": "GET",
-    "expected_status": 200
-  },
+{
+  "member_update": [
     {
-    "case_name": "tc-004",
-    "url": "/posts/1",
-    "method": "PUT",
-    "expected_status": 200
-  },
-  {
-    "case_name": "tc-005",
-    "url": "/posts/1",
-    "method": "DELETE",
-    "expected_status": 200
-  },
+      "case_name": "更新名称-正常",
+      "request_data": {"memberName": "DYNAMIC_TEXT_6"},
+      "expected_msg": "成功"
+    },
     {
-    "case_name": "tc-006",
-    "url": "/posts/99999",
-    "method": "GET",
-    "expected_status": 404
-  },
-  {
-    "case_name": "tc-007",
-    "url": "/comments",
-    "method": "GET",
-    "request_data": {"params": {"postId": 1}},
-    "expected_status": 200
-  }
-]
+      "case_name": "更新名称-空字符串",
+      "request_data": {"memberName": ""},
+      "expected_msg": "成功"
+    },
+    {
+      "case_name": "更新性别-男性",
+      "request_data": {"gender": 1},
+      "expected_msg": "成功"
+    },
+    {
+      "case_name": "更新性别-女性",
+      "request_data": {"gender": 2},
+      "expected_msg": "成功"
+    }
+  ],
+  "member_birthday": [
+    {
+      "case_name": "更新生日-正常",
+      "request_data": {"birthday": "DYNAMIC_birthday_18_60"}
+    }
+  ],
+  "questionnaire": [
+    {
+      "case_name": "提交问卷-成功",
+      "questionnaireId": 582,
+      "expected_msg": "成功"
+    },
+    {
+      "case_name": "提交问卷-无效ID",
+      "questionnaireId": 99999,
+      "expected_msg": "失败"
+    }
+  ]
+
+}

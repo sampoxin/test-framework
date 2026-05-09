@@ -21,7 +21,7 @@ def setup_logger(name=None):
         logger.addHandler(fh)
 
         # 控制台 handler
-        sh = logging.StreamHandler()
-        sh.setFormatter(formatter)
-        logger.addHandler(sh)
+        # sh = logging.StreamHandler()
+        # sh.setFormatter(formatter)
+        # logger.addHandler(sh)
     return logger

@@ -3,7 +3,7 @@ import sys
 
 if __name__ == "__main__":
     sys.exit(pytest.main([
-        "testcases/",
+        "testcases/test_marketing.py",
         "--alluredir=reports/allure-results",
         "-v"
     ]))

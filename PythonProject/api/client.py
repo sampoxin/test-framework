@@ -2,9 +2,11 @@ import time
 import requests
 from functools import wraps
 
+from config.settings import TENANT
 from utils.logger import setup_logger
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
 
 class ApiClient:
     def __init__(self, base_url, timeout):
@@ -15,7 +17,7 @@ class ApiClient:
 
         # 保持会话
         self.session = requests.Session()
-        self.session.headers.update({"Content-Type": "application/json"})
+        self.session.headers.update({"Content-Type": "application/json","x-tenant": TENANT})
 
         # 重试配置
         retry = Retry(
@@ -37,7 +39,7 @@ class ApiClient:
             self.logger.info(f"开始请求: [{method}] {url} params={params}")
             response = func(self, method, url, **params)
             elapsed = time.time() - start_time
-            self.logger.info(f"[{method}] {url} 响应状态码:{response.status_code} 耗时:{elapsed:.3f}s")
+            self.logger.info(f"[{method}] {url} 响应结果:{response.json()} 耗时:{elapsed:.3f}s")
             self.history.append({
                 "method": method,
                 "url": url,
@@ -61,7 +63,7 @@ class ApiClient:
         return response
 
     def set_token(self, token):
-        self.session.headers.update({"Authorization": f"Bearer {token}"})
+        self.session.headers.update(token)
 
     def get_history(self):
         return self.history

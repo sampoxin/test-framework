@@ -1,3 +1,5 @@
+allure-python-commons
+faker
 requests
 pytest
 allure-pytest
