@@ -1,2 +1,0 @@
-INFO     utils.logger:client.py:39 开始请求: [GET] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/checkUpdateBirthday params={}
-INFO     utils.logger:client.py:42 [GET] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/checkUpdateBirthday 响应结果:{'data': False, 'code': 'Success', 'msg': '成功', 'errorMsg': '', 'success': True} 耗时:0.238s

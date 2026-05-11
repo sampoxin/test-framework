@@ -1,2 +1,0 @@
-INFO     utils.logger:client.py:39 开始请求: [GET] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/pay-view/ol-Rm12Og9kkkDeWHRMfz8caVZ6w params={}
-INFO     utils.logger:client.py:42 [GET] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/pay-view/ol-Rm12Og9kkkDeWHRMfz8caVZ6w 响应结果:{'data': {'token': '17783094445092caaf75d6c15c806693', 'expireTime': '2026-05-09 15:00:44'}, 'code': 'Success', 'msg': '成功', 'errorMsg': '', 'success': True} 耗时:0.541s

@@ -1,2 +1,0 @@
-INFO     utils.logger:client.py:39 开始请求: [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/update params={'json': {'memberId': 1609, 'birthday': '1967-08-30'}}
-INFO     utils.logger:client.py:42 [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/update 响应结果:{'data': None, 'code': 'MEMBER_MODIFY_BIRTHDAY_YEAR_LIMIT', 'msg': '', 'errorMsg': '一年内仅能修改一次生日', 'success': False} 耗时:0.232s
