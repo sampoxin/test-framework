@@ -37,22 +37,30 @@ class ApiClient:
             url = self.base_url + path
             method = method.upper()
             self.logger.info(f"开始请求: [{method}] {url} params={params}")
-            response = func(self, method, url, **params)
-            elapsed = time.time() - start_time
-            self.logger.info(f"[{method}] {url} 响应结果:{response.json()} 耗时:{elapsed:.3f}s")
-            self.history.append({
-                "method": method,
-                "url": url,
-                "status_code": response.status_code,
-                "elapsed": elapsed
-            })
-            return response
+
+            try:
+                response = func(self, method, url, **params)
+                elapsed = time.time() - start_time
+                try:
+                    self.logger.info(f"[{method}] {url} 响应结果:{response.json()} 耗时:{elapsed:.3f}s")
+                except ValueError:
+                    self.logger.info(f"[{method}] {url} 响应非JSON 耗时:{elapsed:.3f}s")
+                self.history.append({
+                    "method": method,
+                    "url": url,
+                    "status_code": response.status_code,
+                    "elapsed": elapsed
+                })
+                return response
+            except Exception as e:
+                self.logger.error(f"[{method}] {url} 失败: {str(e)}")
+                raise
         return wrapper
 
     @req_log
     def send(self, method, url, params=None,json=None,data=None):
         # 显式参数params/json/data 分开传
-        response = self.session.request(
+        return self.session.request(
             method,
             url,
             params=params,
@@ -60,7 +68,6 @@ class ApiClient:
             data=data,
             timeout=self.timeout
         )
-        return response
 
     def set_token(self, token):
         self.session.headers.update(token)

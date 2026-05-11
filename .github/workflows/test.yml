@@ -20,13 +20,23 @@ jobs:                                 # 任务定义
       - name: 安装 Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: '3.12'
+
+      - name: 缓存依赖
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('PythonProject/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: 安装依赖
         run: pip install -r requirements.txt
 
       - name: 运行测试
-        run: pytest testcases/ --alluredir=reports/allure-results -v
+        run: pytest -m p0 -v
+        env:
+          TEST_ENV: dev  # 设置测试环境变量
 
       - name: 上传测试报告
         if: always()                  # 即使测试失败也执行
@@ -34,6 +44,13 @@ jobs:                                 # 任务定义
         with:
           name: allure-results
           path: PythonProject/reports/allure-results/
+
+      - name: 上传覆盖率报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: PythonProject/htmlcov/
           
       - name: 安装 Allure 命令行
         if: always()

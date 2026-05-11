@@ -36,16 +36,13 @@ def generate_value(rule):
         return None
     rule_type = rule.split("_")[1].lower()
     if rule_type == "text":
-        # DYNAMIC_text_10
         max_length = int(rule.split("_")[-1])
         return fake.text(max_nb_chars = max_length)
     elif rule_type == "int":
-        # DYNAMIC_int_100_200
         min_int = int(rule.split("_")[2])
         max_int = int(rule.split("_")[-1])
         return random.randint(min_int, max_int)
     elif rule_type == "birthday":
-        # DYNAMIC_birthday_18_60
         min_age = int(rule.split("_")[2])
         max_age = int(rule.split("_")[-1])
         return str(fake.date_of_birth(
@@ -56,6 +53,8 @@ def generate_value(rule):
         return fake.phone_number()
     elif rule_type == "name":
         return fake.name()
+    elif rule_type == "avatar":
+        return img[random.randint(0, len(img)-1)]
     return None
 
 if __name__ == "__main__":

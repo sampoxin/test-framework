@@ -3,5 +3,7 @@
 __pycache__/
 *.pyc
 reports/
-test_run.log
+log/
 .idea/
+htmlcov/
+.coverage
