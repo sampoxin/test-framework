@@ -1,0 +1,2 @@
+2026-06-01 05:52:14,359 - [INFO] - 开始请求: [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/update params={'json': {'memberId': 1609, 'memberName': '公司介绍.'}}
+2026-06-01 05:52:14,611 - [INFO] - [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/update 响应结果:{'data': True, 'code': 'Success', 'msg': '成功', 'errorMsg': '', 'success': True} 耗时:0.252s

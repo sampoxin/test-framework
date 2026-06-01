@@ -1,0 +1,2 @@
+2026-06-01 05:52:16,001 - [INFO] - 开始请求: [GET] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/rule params={}
+2026-06-01 05:52:16,225 - [INFO] - [GET] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/rule 响应结果:{'data': '<p><img src="https://ocss-noprod-file.busyming.com/1/material/1772594874026_有点推荐会员规则&协议说明-20260304_01(1).png" alt="" data-href="" style=""/></p><p><br></p>', 'code': 'Success', 'msg': '成功', 'errorMsg': '', 'success': True} 耗时:0.224s

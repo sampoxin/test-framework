@@ -1,0 +1,2 @@
+2026-06-01 05:52:11,351 - [INFO] - 开始请求: [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/marketing/activity/check params={'json': {'memberId': 1609, 'activityId': 450}}
+2026-06-01 05:52:11,580 - [INFO] - [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/marketing/activity/check 响应结果:{'data': {'activityId': 450, 'isAllowed': False, 'reasonType': 'ACTIVITY_HAS_END', 'reason': '活动已结束', 'isAllPrize': None, 'allowedPrizeId': None}, 'code': 'Success', 'msg': '成功', 'errorMsg': '', 'success': True} 耗时:0.229s
