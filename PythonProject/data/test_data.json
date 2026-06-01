@@ -1,48 +1,312 @@
 {
   "member_update": [
-    {"case_name": "更新名称-正常", "request_data": {"memberName": "DYNAMIC_text_6"}, "expected_code": "Success", "mark": "p0"},
-    {"case_name": "更新名称-空字符串", "request_data": {"memberName": ""}, "expected_code": "Success", "mark": "p2"},
-    {"case_name": "更新名称-超长字符(50)", "request_data": {"memberName": "DYNAMIC_text_50"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新名称-特殊字符", "request_data": {"memberName": "@#$%^&*()"}, "expected_code": "Success", "mark": "p2"},
-    {"case_name": "更新名称-纯数字", "request_data": {"memberName": "123456"}, "expected_code": "Success", "mark": "p2"},
-    {"case_name": "更新性别-男性", "request_data": {"gender": 1}, "expected_code": "Success", "mark": "p0"},
-    {"case_name": "更新性别-女性", "request_data": {"gender": 2}, "expected_code": "Success", "mark": "p1"},
-    {"case_name": "更新性别-无效值0", "request_data": {"gender": 0}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新性别-未知", "request_data": {"gender": 3}, "expected_code": "Success", "mark": "p2"},
-    {"case_name": "更新性别-负数", "request_data": {"gender": -1}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新性别-超大数", "request_data": {"gender": 999}, "expected_code": "FAIL", "mark": "p3"}
+    {
+      "case_name": "更新名称-正常",
+      "request_data": {
+        "memberName": "DYNAMIC_text_6"
+      },
+      "expected_code": "Success",
+      "mark": "p0"
+    },
+    {
+      "case_name": "更新名称-空字符串",
+      "request_data": {
+        "memberName": ""
+      },
+      "expected_code": "Success",
+      "mark": "p2"
+    },
+    {
+      "case_name": "更新名称-超长字符(50)",
+      "request_data": {
+        "memberName": "DYNAMIC_text_50"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新名称-特殊字符",
+      "request_data": {
+        "memberName": "@#$%^&*()"
+      },
+      "expected_code": "Success",
+      "mark": "p2"
+    },
+    {
+      "case_name": "更新名称-纯数字",
+      "request_data": {
+        "memberName": "123456"
+      },
+      "expected_code": "Success",
+      "mark": "p2"
+    },
+    {
+      "case_name": "更新性别-男性",
+      "request_data": {
+        "gender": 1
+      },
+      "expected_code": "Success",
+      "mark": "p0"
+    },
+    {
+      "case_name": "更新性别-女性",
+      "request_data": {
+        "gender": 2
+      },
+      "expected_code": "Success",
+      "mark": "p1"
+    },
+    {
+      "case_name": "更新性别-无效值0",
+      "request_data": {
+        "gender": 0
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新性别-未知",
+      "request_data": {
+        "gender": 3
+      },
+      "expected_code": "Success",
+      "mark": "p2"
+    },
+    {
+      "case_name": "更新性别-负数",
+      "request_data": {
+        "gender": -1
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新性别-超大数",
+      "request_data": {
+        "gender": 999
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    }
   ],
   "member_birthday": [
-    {"case_name": "更新生日-正常范围", "request_data": {"birthday": "DYNAMIC_birthday_18_60"}, "expected_code": "Success", "mark": "p1"},
-    {"case_name": "更新生日-未来日期", "request_data": {"birthday": "2050-01-01"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新生日-格式错误(yyyy/mm/dd)", "request_data": {"birthday": "2000/01/01"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新生日-格式错误(dd-mm-yyyy)", "request_data": {"birthday": "01-01-2000"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新生日-空值", "request_data": {"birthday": ""}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新生日-无效日期", "request_data": {"birthday": "2020-13-32"}, "expected_code": "FAIL", "mark": "p3"}
+    {
+      "case_name": "更新生日-正常范围",
+      "request_data": {
+        "birthday": "DYNAMIC_birthday_18_60"
+      },
+      "expected_code": "Success",
+      "mark": "p1"
+    },
+    {
+      "case_name": "更新生日-未来日期",
+      "request_data": {
+        "birthday": "2050-01-01"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新生日-格式错误(yyyy/mm/dd)",
+      "request_data": {
+        "birthday": "2000/01/01"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新生日-格式错误(dd-mm-yyyy)",
+      "request_data": {
+        "birthday": "01-01-2000"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新生日-空值",
+      "request_data": {
+        "birthday": ""
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新生日-无效日期",
+      "request_data": {
+        "birthday": "2020-13-32"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    }
   ],
   "member_avatar": [
-    {"case_name": "更新头像-正常URL", "request_data": {"avatar": "DYNAMIC_avatar"}, "expected_code": "Success", "mark": "p1"},
-    {"case_name": "更新头像-空字符串", "request_data": {"avatar": ""}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新头像-无效URL格式", "request_data": {"avatar": "not_a_valid_url"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "更新头像-不存在的URL", "request_data": {"avatar": "https://example.com/nonexistent.jpg"}, "expected_code": "FAIL", "mark": "p3"}
+    {
+      "case_name": "更新头像-正常URL",
+      "request_data": {
+        "avatar": "DYNAMIC_avatar"
+      },
+      "expected_code": "Success",
+      "mark": "p1"
+    },
+    {
+      "case_name": "更新头像-空字符串",
+      "request_data": {
+        "avatar": ""
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新头像-无效URL格式",
+      "request_data": {
+        "avatar": "not_a_valid_url"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "更新头像-不存在的URL",
+      "request_data": {
+        "avatar": "https://example.com/nonexistent.jpg"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    }
   ],
   "member_lm_deposit": [
-    {"case_name": "查询存款-正常参数", "request_data": {"pageNum": 1, "pageSize": 10, "sort": "DESC"}, "expected_code": "Success", "mark": "p0"},
-    {"case_name": "查询存款-无效排序", "request_data": {"pageNum": 1, "pageSize": 10, "sort": "INVALID"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "查询存款-pageNum为0", "request_data": {"pageNum": 0, "pageSize": 10, "sort": "DESC"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "查询存款-pageNum为负数", "request_data": {"pageNum": -1, "pageSize": 10, "sort": "DESC"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "查询存款-pageSize为0", "request_data": {"pageNum": 1, "pageSize": 0, "sort": "DESC"}, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "查询存款-pageSize超大", "request_data": {"pageNum": 1, "pageSize": 1000, "sort": "DESC"}, "expected_code": "FAIL", "mark": "p3"}
+    {
+      "case_name": "查询存款-正常参数",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "sort": "DESC"
+      },
+      "expected_code": "Success",
+      "mark": "p0"
+    },
+    {
+      "case_name": "查询存款-无效排序",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "sort": "INVALID"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "查询存款-pageNum为0",
+      "request_data": {
+        "pageNum": 0,
+        "pageSize": 10,
+        "sort": "DESC"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "查询存款-pageNum为负数",
+      "request_data": {
+        "pageNum": -1,
+        "pageSize": 10,
+        "sort": "DESC"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "查询存款-pageSize为0",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 0,
+        "sort": "DESC"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "查询存款-pageSize超大",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 1000,
+        "sort": "DESC"
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    }
   ],
   "member_lm_consume": [
-    {"case_name": "查询消费-正常参数", "request_data": {"pageNum": 1, "pageSize": 10, "sort": "DESC"}, "expected_code": "Success", "mark": "p0"},
-    {"case_name": "查询消费-无效排序", "request_data": {"pageNum": 1, "pageSize": 10, "sort": "ASC"}, "expected_code": "Success", "mark": "p2"},
-    {"case_name": "查询消费-空cardUserNum", "request_data": {"pageNum": 1, "pageSize": 10, "sort": "DESC", "cardUserNum": ""}, "expected_code": "FAIL", "mark": "p3"}
+    {
+      "case_name": "查询消费-正常参数",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "sort": "DESC"
+      },
+      "expected_code": "Success",
+      "mark": "p0"
+    },
+    {
+      "case_name": "查询消费-无效排序",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "sort": "ASC"
+      },
+      "expected_code": "Success",
+      "mark": "p2"
+    },
+    {
+      "case_name": "查询消费-空cardUserNum",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "sort": "DESC",
+        "cardUserNum": ""
+      },
+      "expected_code": "FAIL",
+      "mark": "p3"
+    }
   ],
   "questionnaire": [
-    {"case_name": "提交问卷-Success", "questionnaireId": 582, "expected_code": "Success", "mark": "p0"},
-    {"case_name": "提交问卷-无效ID", "questionnaireId": 99999, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "提交问卷-空ID", "questionnaireId": 0, "expected_code": "FAIL", "mark": "p3"},
-    {"case_name": "提交问卷-负数ID", "questionnaireId": -1, "expected_code": "FAIL", "mark": "p3"}
+    {
+      "case_name": "提交问卷-Success",
+      "questionnaireId": 582,
+      "expected_code": "Success",
+      "mark": "p0"
+    },
+    {
+      "case_name": "提交问卷-无效ID",
+      "questionnaireId": 99999,
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "提交问卷-空ID",
+      "questionnaireId": 0,
+      "expected_code": "FAIL",
+      "mark": "p3"
+    },
+    {
+      "case_name": "提交问卷-负数ID",
+      "questionnaireId": -1,
+      "expected_code": "FAIL",
+      "mark": "p3"
+    }
+  ],
+  "coupon_list": [
+    {
+      "case_name": "coupon_list-正常请求",
+      "request_data": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "sort": "ASC",
+        "status": [
+          "2"
+        ]
+      },
+      "expected_code": "Success",
+      "mark": "p0"
+    }
   ]
 }

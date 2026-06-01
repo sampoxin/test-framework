@@ -1,6 +1,6 @@
 import pytest
 import os
-
+import shutil
 from api.client import ApiClient
 from config.settings import BASE_URL, TIMEOUT
 
@@ -9,6 +9,12 @@ TEST_USERS = [
     {"phone": "12222220010", "areaCode": "86", "registerChannel": "WX_APPLET"}
 ]
 def pytest_configure(config):
+    # 每次测试开始前清空 allure-results 目录
+    results_dir = "reports/allure-results"
+    if os.path.exists(results_dir):
+        shutil.rmtree(results_dir)
+    os.makedirs(results_dir, exist_ok=True)
+
     for level in ['p0', 'p1', 'p2', 'p3']:
         config.addinivalue_line("markers", f"{level}: 测试级别")
 
