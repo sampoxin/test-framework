@@ -112,7 +112,7 @@ class ActivityUser(HttpUser):
 @events.test_start.add_listener
 def on_test_start(environment, **kwargs):
     try:
-        with open("data/member_data.csv", "r", encoding="utf-8") as f:
+        with open("data/dev_member_data.csv", "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             ActivityUser.member_pool = list(reader)
         print(f"✅ 用户池初始化成功，共 {len(ActivityUser.member_pool)} 个用户")

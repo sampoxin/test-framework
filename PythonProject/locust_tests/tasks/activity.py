@@ -1,21 +1,14 @@
-import threading
-
-from locust import HttpUser, SequentialTaskSet, between, task, events
-from config.settings import BASE_URL, TENANT
-import pandas as pd
-
-from utils.logger import setup_logger
-logger = setup_logger()
+from locust import TaskSet, task
+from config import ACTIVITY_ID
+from locust_tests.tasks import SharedData
 
 
-class MemberBehavior(SequentialTaskSet):
+class MemberBehavior(TaskSet):
     def on_start(self):
-        self.client.headers.update({"Content-Type": "application/json", "x-tenant": TENANT})
-
-        with ActivityUser._member_lock:
-            member_idx = ActivityUser.member_index
-            ActivityUser.member_index = (ActivityUser.member_index + 1) % len(ActivityUser.member_pool)
-        test_member = ActivityUser.member_pool[member_idx]
+        with SharedData._member_lock:
+            member_idx = SharedData.member_index
+            SharedData.member_index = (SharedData.member_index + 1) % len(SharedData.member_pool)
+        test_member = SharedData.member_pool[member_idx]
         member_rep = self.client.post("/api/v1/wx-mini/member/login/test", json={
             "phone": test_member.get("phone"),
             "areaCode": "86",
@@ -25,7 +18,7 @@ class MemberBehavior(SequentialTaskSet):
             self.member_info = member_rep.json().get("data", {})
             self.client.headers.update({"auth-token": self.member_info.get("token", "")})
         except Exception as e:
-            logger.error(f"用户：{test_member.get('phone')}，响应结果： {member_rep.text}，错误：{e} ")
+            print(f"用户：{test_member.get('phone')}，响应结果： {member_rep.text}，错误：{e} ")
             self.interrupt(reschedule=False)
 
     def on_stop(self):
@@ -38,7 +31,7 @@ class MemberBehavior(SequentialTaskSet):
             "/api/v1/wx-mini/marketing/activity/detail",
             json={
                 "memberId": self.member_info.get("memberId"),
-                "activityId": ActivityUser.activity_id
+                "activityId": ACTIVITY_ID
             }
         )
 
@@ -48,7 +41,7 @@ class MemberBehavior(SequentialTaskSet):
             "/api/v1/wx-mini/marketing/activity/prize-details",
             json={
                 "memberId": self.member_info.get("memberId"),
-                "activityId": ActivityUser.activity_id
+                "activityId": ACTIVITY_ID
             }
         )
 
@@ -58,7 +51,7 @@ class MemberBehavior(SequentialTaskSet):
             "/api/v1/wx-mini/marketing/activity/visit",
             json={
                 "memberId": self.member_info.get("memberId"),
-                "activityId": ActivityUser.activity_id
+                "activityId": ACTIVITY_ID
             }
         )
 
@@ -68,7 +61,7 @@ class MemberBehavior(SequentialTaskSet):
             "/api/v1/wx-mini/marketing/activity/check",
             json={
                 "memberId": self.member_info.get("memberId"),
-                "activityId": ActivityUser.activity_id
+                "activityId": ACTIVITY_ID
             }
         )
         check_data = check_rep.json().get("data", {})
@@ -80,7 +73,7 @@ class MemberBehavior(SequentialTaskSet):
             "/api/v1/wx-mini/marketing/activity/times",
             json={
                 "memberId": self.member_info.get("memberId"),
-                "activityId": ActivityUser.activity_id
+                "activityId": ACTIVITY_ID
             }
         )
         times_data = times_rep.json().get("data", {})
@@ -93,39 +86,11 @@ class MemberBehavior(SequentialTaskSet):
                 "/api/v1/wx-mini/marketing/activity/join",
                 json={
                     "memberId": self.member_info.get("memberId"),
-                    "activityId": ActivityUser.activity_id
+                    "activityId": ACTIVITY_ID
                 }
             )
         else:
-            logger.info(f"用户：{self.member_info.get("memberId")}，不满足参与条件: isAllowed={self.is_allowed}, unused={self.unused_times}")
+            print(f"用户：{self.member_info.get('memberId')}，不满足参与条件: isAllowed={self.is_allowed}, unused={self.unused_times}")
 
 
-class ActivityUser(HttpUser):
-    host = BASE_URL
-    wait_time = between(1, 2)
-    tasks = [MemberBehavior]
-
-    member_index = 0
-    member_pool = None
-    _member_lock = threading.Lock()
-
-    activity_id = 450
-
-
-@events.test_start.add_listener
-def on_test_start(environment, **kwargs):
-    try:
-        df = pd.read_csv("data/member_data.csv", encoding="utf-8")
-        ActivityUser.member_pool = df.to_dict(orient="records")
-        print(f"✅ 用户池初始化成功，共 {len(ActivityUser.member_pool)} 个用户")
-    except FileNotFoundError:
-        print("❌ 用户数据文件不存在")
-        raise
-    except Exception as e:
-        print(f"❌ 初始化用户池时出错: {e}")
-        raise
-
-
-@events.test_stop.add_listener
-def on_test_stop(environment, **kwargs):
-    print("✅ 所有用户测试完成")
+__all__ = ['MemberBehavior']
