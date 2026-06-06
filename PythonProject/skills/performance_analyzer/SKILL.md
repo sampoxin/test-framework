@@ -35,7 +35,6 @@ tools: Read, Grep, Glob, Bash, Write
 ```markdown
 # Locust 性能测试报告
 
-**报告版本**: v2.0
 **测试时间**: {测试执行时间}
 **测试环境**: {env}
 **API地址**: {api_base_url}
@@ -60,7 +59,7 @@ tools: Read, Grep, Glob, Bash, Write
 
 ### 2.1 测试配置
 
-（列出并发用户数、启动速率、测试时长、请求模式等）
+（列出并发用户数、启动速率、测试时长、请求模式(中文描述)等）
 
 ### 2.2 核心性能指标
 
@@ -94,7 +93,7 @@ tools: Read, Grep, Glob, Bash, Write
 ## 5. 性能分析与结论
 
 ### 5.1 表现优秀的接口
-（列出响应时间 < 100ms 的接口及优势分析）
+（列出响应时间 < 100ms 的接口、请求数、平均响应时间、优势分析）
 
 ### 5.2 性能瓶颈识别
 
@@ -136,24 +135,7 @@ tools: Read, Grep, Glob, Bash, Write
 
 ## 数据提取规则
 
-### 从 CSV 文件提取数据
-
-1. **stats_stats.csv**: 核心统计数据
-   - 解析每个接口的请求数、失败数、响应时间（中位数、平均、最小、最大、P50、P90、P95、P99）、RPS
-   - 最后一行 `Aggregated` 为汇总数据
-
-2. **stats_failures.csv**: 失败请求详情
-   - 提取失败的接口、错误类型、错误数量
-
-3. **stats_exceptions.csv**: 异常信息
-   - 提取异常类型、异常数量、异常消息
-
-4. **stats_stats_history.csv**: 历史趋势数据（如有）
-
 ### 从 HTML 文件提取数据
-
-- 作为 CSV 数据的补充验证源
-- 提取图表数据（如有）
 
 ## 评级计算规则
 

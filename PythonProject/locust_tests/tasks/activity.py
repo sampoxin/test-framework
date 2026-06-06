@@ -1,9 +1,9 @@
-from locust import TaskSet, task
+from locust import SequentialTaskSet, task
 from config import ACTIVITY_ID
 from locust_tests.tasks import SharedData
 
 
-class MemberBehavior(TaskSet):
+class MemberBehavior(SequentialTaskSet):
     def on_start(self):
         with SharedData._member_lock:
             member_idx = SharedData.member_index
