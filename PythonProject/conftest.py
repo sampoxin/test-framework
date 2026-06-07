@@ -46,9 +46,11 @@ def pytest_sessionfinish(session, exitstatus):
 
     # 发送钉钉通知
     webhook_url = os.environ.get("DINGTALK_WEBHOOK")
+    webhook_secret = os.environ.get("DINGTALK_SECRET")
     print(f"[钉钉通知] WEBHOOK配置: {'已配置' if webhook_url else '未配置'}")
+    print(f"[钉钉通知] 加签密钥: {'已配置' if webhook_secret else '未配置'}")
     if webhook_url:
-        notifier = DingTalkNotifier(webhook_url=webhook_url)
+        notifier = DingTalkNotifier(webhook_url=webhook_url, secret=webhook_secret)
         result = {
             "passed": test_results["passed"],
             "failed": test_results["failed"],

@@ -38,6 +38,7 @@ jobs:                                 # 任务定义
         env:
           LOCUST_ENV: dev  # 设置测试环境变量
           DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+          DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
 
       - name: 上传测试报告
         if: always()                  # 即使测试失败也执行
