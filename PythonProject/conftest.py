@@ -41,6 +41,18 @@ def pytest_sessionstart(session):
 
 def pytest_sessionfinish(session, exitstatus):
     """测试会话结束时发送通知"""
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'master')
+    
+    # 只在 master 进程发送通知，避免 worker 进程重复发送
+    if worker_id != 'master':
+        print(f"[钉钉通知] 当前为 worker 进程 {worker_id}，跳过发送通知")
+        return
+    
+    # 如果没有收集到任何测试结果，说明是 xdist 的空 session，跳过
+    if test_results["total"] == 0:
+        print(f"[钉钉通知] 未收集到测试结果，跳过发送")
+        return
+    
     test_results["end_time"] = time.time()
     duration = test_results["end_time"] - test_results["start_time"]
 
