@@ -2,7 +2,7 @@ import threading
 import csv
 
 from locust import HttpUser, SequentialTaskSet, between, task, events
-from config.settings import BASE_URL, TENANT
+from config import BASE_URL, TENANT
 
 
 class MemberBehavior(SequentialTaskSet):

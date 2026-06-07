@@ -2,8 +2,8 @@
 Locust 性能测试主入口文件
 
 使用方法：
-    $env:LOCUST_ENV="test"
-    locust -f locust_tests/locustfile.py --headless -u 10 -t 30s --html=reports/locust-report/report.html
+    $env:LOCUST_ENV="dev"
+    locust -f locust_tests/locustfile.py --headless -u 1 -t 10s --html=reports/locust-report/report.html
 
 支持的任务：
     - 问卷测试 (tasks/questionnaire.py)
@@ -27,7 +27,7 @@ class TestUser(HttpUser):
     """统一测试用户类"""
     host = BASE_URL
     wait_time = between(1, 2)
-    
+
     def on_start(self):
         """用户初始化"""
         self.client.headers.update({

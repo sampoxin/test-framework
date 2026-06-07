@@ -2,7 +2,7 @@ import time
 import requests
 from functools import wraps
 
-from config.settings import TENANT
+from config import TENANT
 from utils.logger import setup_logger
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry

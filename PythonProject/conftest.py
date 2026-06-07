@@ -2,7 +2,7 @@ import pytest
 import os
 import shutil
 from api.client import ApiClient
-from config.settings import BASE_URL, TIMEOUT
+from config import BASE_URL, TIMEOUT
 
 TEST_USERS = [
     {"phone": "15973199394", "areaCode": "86", "registerChannel": "WX_APPLET"},

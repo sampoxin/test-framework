@@ -8,6 +8,7 @@ class MemberBehavior(SequentialTaskSet):
         with SharedData._member_lock:
             member_idx = SharedData.member_index
             SharedData.member_index = (SharedData.member_index + 1) % len(SharedData.member_pool)
+        # print('================',SharedData.member_pool,member_idx)
         test_member = SharedData.member_pool[member_idx]
         member_rep = self.client.post("/api/v1/wx-mini/member/login/test", json={
             "phone": test_member.get("phone"),

@@ -1,5 +1,5 @@
 from locust import HttpUser, task, between, SequentialTaskSet, TaskSet, events
-from config.settings import BASE_URL, TENANT
+from config import BASE_URL, TENANT
 from utils.logger import setup_logger
 
 logger = setup_logger()
