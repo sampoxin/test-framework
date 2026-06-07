@@ -46,6 +46,7 @@ def pytest_sessionfinish(session, exitstatus):
 
     # 发送钉钉通知
     webhook_url = os.environ.get("DINGTALK_WEBHOOK")
+    print(f"[钉钉通知] WEBHOOK配置: {'已配置' if webhook_url else '未配置'}")
     if webhook_url:
         notifier = DingTalkNotifier(webhook_url=webhook_url)
         result = {
@@ -57,7 +58,9 @@ def pytest_sessionfinish(session, exitstatus):
             "env": CURRENT_ENV,
             "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
-        notifier.send_test_report(result)
+        print(f"[钉钉通知] 开始发送测试报告: 通过={result['passed']}, 失败={result['failed']}, 跳过={result['skipped']}")
+        success = notifier.send_test_report(result)
+        print(f"[钉钉通知] 发送结果: {'成功' if success else '失败'}")
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
