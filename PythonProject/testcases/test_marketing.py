@@ -2,6 +2,7 @@ import random
 import allure
 import pytest
 
+from config import QUESTIONNAIRE_ID
 from utils.tools import load_test_data
 
 TEST_DATA = load_test_data("test_data.json")
@@ -17,7 +18,7 @@ class TestMarketing:
         user_data = client.user_data
         result = client.send("POST", "/api/v1/wx-mini/marketing/questionnaire/detail",
                              json={
-                                "questionnaireId": 582,
+                                "questionnaireId": QUESTIONNAIRE_ID,
                                 "openid": user_data.get("openId"),
                                 "unionid": user_data.get("unionId"),
                                 "memberId": user_data.get("memberId")
@@ -41,8 +42,10 @@ class TestMarketing:
     def test_submit_questionnaire(self, client, context, data):
         user_data = client.user_data
         questionnaire_base = context.get("questionnaire_base", {})
+        # 正常提交问卷使用配置的ID，其他测试用例使用data中的值
+        q_id = QUESTIONNAIRE_ID if data["case_name"] == "提交问卷-Success" else data["questionnaireId"]
         questionnaire = {
-            "questionnaireId": data["questionnaireId"],
+            "questionnaireId": q_id,
             "openid": questionnaire_base.get("openid", user_data.get("openId")),
             "unionid": questionnaire_base.get("unionid", user_data.get("unionId")),
             "memberId": questionnaire_base.get("memberId", user_data.get("memberId")),
