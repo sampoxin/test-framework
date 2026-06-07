@@ -37,6 +37,7 @@ jobs:                                 # 任务定义
         run: pytest -m p0 -v
         env:
           LOCUST_ENV: dev  # 设置测试环境变量
+          DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
 
       - name: 上传测试报告
         if: always()                  # 即使测试失败也执行

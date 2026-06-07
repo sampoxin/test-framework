@@ -284,6 +284,60 @@ performance_test:
     - tags
 ```
 
+## 钉钉通知配置
+
+### 配置方法
+
+1. 在钉钉群中添加自定义机器人（群设置 -> 智能群助手 -> 添加机器人）
+2. 复制 Webhook 地址
+3. 配置环境变量
+
+### 使用方式
+
+**本地测试：**
+```bash
+# Windows PowerShell
+$env:DINGTALK_WEBHOOK="https://oapi.dingtalk.com/robot/send?access_token=xxx"
+pytest -m p0 -v
+
+# Linux/Mac
+export DINGTALK_WEBHOOK="https://oapi.dingtalk.com/robot/send?access_token=xxx"
+pytest -m p0 -v
+```
+
+**GitHub Actions:**
+在仓库 Settings -> Secrets and variables -> Actions 中添加 Secret:
+- `DINGTALK_WEBHOOK`: 钉钉机器人 Webhook 地址
+
+### 通知效果
+
+- 测试通过：显示绿色报告，不@所有人
+- 测试失败：显示红色报告，@所有人
+
+### 自定义通知
+
+```python
+from utils.dingtalk_notifier import DingTalkNotifier
+
+notifier = DingTalkNotifier(webhook_url="https://oapi.dingtalk.com/robot/send?access_token=xxx")
+
+# 发送文本
+notifier.send_text("测试消息")
+
+# 发送Markdown
+notifier.send_markdown("标题", "**内容**")
+
+# 发送测试报告
+notifier.send_test_report({
+    "passed": 10,
+    "failed": 0,
+    "skipped": 1,
+    "total": 11,
+    "duration": 15.5,
+    "env": "dev"
+})
+```
+
 ## 配置说明
 
 ### test.yaml 配置项
