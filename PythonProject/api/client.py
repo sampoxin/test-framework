@@ -1,7 +1,7 @@
 import time
 import requests
 from functools import wraps
-
+import random
 from config import TENANT
 from utils.logger import setup_logger
 from requests.adapters import HTTPAdapter
@@ -9,11 +9,12 @@ from urllib3.util.retry import Retry
 
 
 class ApiClient:
-    def __init__(self, base_url, timeout):
+    def __init__(self, base_url, timeout, think_time=0):
         self.base_url = base_url
         self.timeout = timeout
         self.history = []
         self.logger = setup_logger()
+        self.think_time = think_time
 
         # 保持会话
         self.session = requests.Session()
@@ -60,7 +61,7 @@ class ApiClient:
     @req_log
     def send(self, method, url, params=None,json=None,data=None):
         # 显式参数params/json/data 分开传
-        return self.session.request(
+        response = self.session.request(
             method,
             url,
             params=params,
@@ -68,6 +69,12 @@ class ApiClient:
             data=data,
             timeout=self.timeout
         )
+        if self.think_time > 0:
+            time.sleep(self.think_time)
+        else:
+            time.sleep(random.uniform(0.5, 2))
+        return response
+        
 
     def set_token(self, token):
         self.session.headers.update(token)

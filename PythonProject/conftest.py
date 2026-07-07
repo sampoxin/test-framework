@@ -126,6 +126,18 @@ def client(request):
     client.user_data = resp_data
     yield client
 
+@pytest.fixture(scope="session")
+def admin_client(request):
+    client = ApiClient(BASE_URL, TIMEOUT)
+    resp = client.send("POST", "/api/v1/admin/auth/login", json={"account":"15973199394","password":"Zj8tUHRHPlT7d+sCSl+bKJdbSvGRP2v6oVyyX1N6PM/bENGi7Kv98WsH/NTEbhso7seXjXU4svdEPHItM2dHolDCj5LmOyKRlbaRnOwdEPbGXzjaEANGr+Y/BhuxTkbFGG9lA2XHCwDEqddjEzxwSDB8y95vORrbO+TFZ42gGoQ=","grantType":"pwd"})
+    resp_data = resp.json().get("data", {})
+    assert resp_data.get("authToken"), "登录失败"
+    client.set_token({
+        "mmhm-token": resp_data.get("authToken"),
+        "x-tenant": str(resp_data.get("tenantId"))
+    })
+    yield client
+
 
 @pytest.fixture(scope="class")
 def context():

@@ -1,25 +1,10 @@
 from locust import SequentialTaskSet, task
 from config import ACTIVITY_ID
-from locust_tests.tasks import SharedData
 
 
 class MemberBehavior(SequentialTaskSet):
     def on_start(self):
-        with SharedData._member_lock:
-            member_idx = SharedData.member_index
-            SharedData.member_index = (SharedData.member_index + 1) % len(SharedData.member_pool)
-        test_member = SharedData.member_pool[member_idx]
-        member_rep = self.client.post("/api/v1/wx-mini/member/login/test", json={
-            "phone": test_member.get("phone"),
-            "areaCode": "86",
-            "registerChannel": "WX_APPLET"
-        })
-        try:
-            self.member_info = member_rep.json().get("data", {})
-            self.client.headers.update({"auth-token": self.member_info.get("token", "")})
-        except Exception as e:
-            print(f"用户：{test_member.get('phone')}，响应结果： {member_rep.text}，错误：{e} ")
-            self.interrupt(reschedule=False)
+        self.member_info = self.user.member_info
 
     def on_stop(self):
         print(f"用户 {self.member_info.get('phone')} 退出")

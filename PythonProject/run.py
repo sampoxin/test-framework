@@ -7,7 +7,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 if __name__ == "__main__":
     sys.exit(pytest.main([
-        "testcases/test_coupon.py",
+        "testcases/test_three_way_match.py",
         "--alluredir=reports/allure-results",
         "-v"
     ]))

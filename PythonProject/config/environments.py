@@ -53,7 +53,7 @@ ENVIRONMENTS = {
         "questionnaire_id": 590,
         "activity_id": 471,
         "timeout": 30,
-        "tenant": "1"
+        "tenant": "9999"
     },
     
     # ---------- 测试环境 ----------
