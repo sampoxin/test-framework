@@ -53,7 +53,14 @@ ENVIRONMENTS = {
         "questionnaire_id": 590,
         "activity_id": 471,
         "timeout": 30,
-        "tenant": "9999"
+        "tenant": "9999",
+        "db": {
+            "host": "pc-bp1s7s2q90jq4eltp.rwlb.rds.aliyuncs.com",
+            "port": 3306,
+            "user": "mall_dev_user",
+            "password": "DQKPLy%lX18GEL25",
+            "database": "mall_dev"
+        }
     },
     
     # ---------- 测试环境 ----------
@@ -63,7 +70,14 @@ ENVIRONMENTS = {
         "questionnaire_id": 582,
         "activity_id": 100,
         "timeout": 30,
-        "tenant": "1"
+        "tenant": "1",
+        "db": {
+            "host": "192.168.1.100",
+            "port": 3306,
+            "user": "root",
+            "password": "your_password",
+            "database": "srm"
+        }
     },
     
     # ---------- 预发环境 ----------

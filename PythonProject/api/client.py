@@ -74,6 +74,14 @@ class ApiClient:
         else:
             time.sleep(random.uniform(0.5, 2))
         return response
+
+    def send_and_validate(self, method, url, params=None, json=None, data=None):
+        """发送请求并自动断言 status_code==200 和 code==Success，直接返回JSON"""
+        result = self.send(method, url, params=params, json=json, data=data)
+        assert result.status_code == 200, f"请求失败 status={result.status_code} url={url}"
+        result_json = result.json()
+        assert result_json["code"] == "Success", f"业务失败 code={result_json['code']} msg={result_json.get('msg', '')} url={url}"
+        return result_json
         
 
     def set_token(self, token):
