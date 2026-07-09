@@ -4,7 +4,7 @@ import pytest
 @allure.epic("三单匹配")
 @allure.feature("收票核票")
 class TestActivity:
-    INVOICE_NO = "26922000000673529101"
+    INVOICE_NO = "26922000000673529101" # 蓝票
 
     @allure.story("收票")
     @pytest.mark.p0
