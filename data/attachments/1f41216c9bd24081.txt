@@ -1,0 +1,2 @@
+2026-07-09 09:48:52,882 - [INFO] - 开始请求: [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/marketing/questionnaire/detail params={'json': {'questionnaireId': 590, 'openid': None, 'unionid': None, 'memberId': 1811}}
+2026-07-09 09:48:54,730 - [INFO] - [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/marketing/questionnaire/detail 响应结果:{'data': None, 'code': 'FAIL', 'msg': '', 'errorMsg': 'openid不能为空', 'success': False} 耗时:1.849s

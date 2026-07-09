@@ -1,2 +1,0 @@
-2026-07-09 09:47:54,199 - [INFO] - 开始请求: [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/update params={'json': {'memberId': 1811, 'gender': 1}}
-2026-07-09 09:47:56,199 - [INFO] - [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/update 响应结果:{'data': True, 'code': 'Success', 'msg': '成功', 'errorMsg': '', 'success': True} 耗时:2.000s

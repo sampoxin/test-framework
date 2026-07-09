@@ -1,0 +1,1 @@
+2026-07-09 09:49:20,717 - [INFO] - [清理] TestForceReceiveInvoice 无发票号，跳过清理
