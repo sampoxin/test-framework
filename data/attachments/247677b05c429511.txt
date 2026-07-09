@@ -1,2 +1,0 @@
-2026-07-07 08:59:47,545 - [INFO] - 开始请求: [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/login/test params={'json': {'phone': '15973199394', 'areaCode': '86', 'registerChannel': 'WX_APPLET'}}
-2026-07-07 08:59:50,763 - [INFO] - [POST] https://dev-ocss-gateway.youdtj.com/api/v1/wx-mini/member/login/test 响应结果:{'data': None, 'code': 'TYPE_DOES_NOT_EXIST', 'msg': '等级不存在', 'errorMsg': '等级不存在', 'success': False} 耗时:3.218s
