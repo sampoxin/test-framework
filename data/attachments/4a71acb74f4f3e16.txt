@@ -1,2 +1,0 @@
-2026-07-09 09:49:31,841 - [ERROR] - [清理] 数据库连接失败: (2003, "Can't connect to MySQL server on 'pc-bp1s7s2q90jq4eltp.rwlb.rds.aliyuncs.com' (timed out)")
-2026-07-09 09:49:31,841 - [INFO] - [清理] TestThreeWayMatch 清理完成 invoice_nos=['26922000000673529101']

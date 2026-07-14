@@ -1,0 +1,2 @@
+2026-07-14 02:50:25,244 - [INFO] - [清理] 读取最新文件: /home/runner/work/test-framework/test-framework/PythonProject/data/output/2026-07-13-test.json
+2026-07-14 02:50:25,245 - [INFO] - [清理] 从文件中提取到发票号: []
