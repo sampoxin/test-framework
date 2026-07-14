@@ -36,10 +36,18 @@ class FileHelper:
         return filepath
 
     def append_json(self, data, filename):
-        """追加写入JSONL文件（每行一个JSON对象），无需读取全文件"""
+        """追加写入JSON数组文件，输出格式为[{},{}]"""
         filepath = self._get_filepath(filename)
-        with open(filepath, 'a', encoding='utf-8') as f:
-            f.write('\n'+json.dumps(data, ensure_ascii=False))
+        existing = []
+        if os.path.exists(filepath):
+            with open(filepath, 'r', encoding='utf-8') as f:
+                try:
+                    existing = json.load(f)
+                except json.JSONDecodeError:
+                    existing = []
+        existing.append(data)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(existing, f, ensure_ascii=False, indent=2)
         logger.info(f"[文件] JSON追加完成: {filepath}")
         return filepath
 
@@ -118,5 +126,11 @@ class FileHelper:
 
 if __name__ == '__main__':
     fh = FileHelper()
-    fh.write_json({'a': 1}, 'test.json')
-    fh.append_json({'b': 2}, 'test.json')
+    a =   {
+        "matchId": 1896,
+        "invoiceNo": [
+          "26922000000673529101"
+        ],
+        "settleNo": "CP99487990000172"
+      }
+    fh.append_json(a, "test.json")

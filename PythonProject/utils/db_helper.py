@@ -38,17 +38,17 @@ class DBHelper:
         self.conn.close()
 
 
-def clean_three_way_match_data(invoice_nos=None):
+def clean_three_way_match_data(match_ids=None):
     """
     清理三单匹配相关数据
     通过多表关联DELETE一次性清理所有关联数据
 
     Args:
-        invoice_nos: 发票编号（t_srm_supplier_invoice.invoice_no）
+        match_ids: 核票编号（t_srm_supplier_invoice.invoice_no）
     """
     logger = setup_logger()
 
-    if not invoice_nos:
+    if not match_ids:
         logger.info("[清理] 未传入invoice_no，跳过清理")
         return
 
@@ -59,19 +59,20 @@ def clean_three_way_match_data(invoice_nos=None):
         return
 
     try:
-        placeholders = ",".join(["%s"] * len(invoice_nos))
+        placeholders = ",".join(["%s"] * len(match_ids))
         sql = f"""
-            DELETE d,c,b,a,e,f,g
-            FROM t_srm_supplier_invoice d
-            LEFT JOIN t_srm_supplier_invoice_item c ON d.id=c.invoice_id
-            LEFT JOIN t_srm_three_way_match b ON d.id=b.invoice_id
-            LEFT JOIN t_srm_three_way_match_item a ON b.id=a.match_id
-            LEFT JOIN t_srm_match_make_up_order e on b.id=e.match_id
-            LEFT JOIN t_srm_expense_order_deduction f on b.id=f.match_id
-            LEFT JOIN t_srm_pre_settlement_deduction g on b.id=g.match_id
-            WHERE d.invoice_no IN ({placeholders})
+            DELETE d,c,b,a,e,f,g,h
+            FROM t_srm_three_way_match b
+            LEFT JOIN t_srm_supplier_invoice d ON d.id = b.invoice_id
+            LEFT JOIN t_srm_supplier_invoice_item c ON d.id = c.invoice_id
+            LEFT JOIN t_srm_three_way_match_item a ON b.id = a.match_id
+            LEFT JOIN t_srm_match_make_up_order e ON b.id = e.match_id
+            LEFT JOIN t_srm_expense_order_deduction f ON b.id = f.match_id
+            LEFT JOIN t_srm_pre_settlement_deduction g ON b.id = g.match_id
+            LEFT JOIN t_srm_match_offset h ON b.id = h.blue_match_id
+            WHERE b.id IN ({placeholders});
         """
-        db.execute(sql, invoice_nos)
+        db.execute(sql, match_ids)
     except Exception as e:
         logger.warning(f"[清理] SQL清理失败: {e}，请手动检查数据库")
     finally:
@@ -79,4 +80,4 @@ def clean_three_way_match_data(invoice_nos=None):
 
 
 if __name__ == "__main__":
-    clean_three_way_match_data(invoice_nos=["26442000007652675806"])
+    clean_three_way_match_data(match_ids=[1872, 1876, 1890,1891,1870])

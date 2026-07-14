@@ -8,3 +8,4 @@ log/
 htmlcov/
 .coverage
 locust_tests/study/
+data/output/

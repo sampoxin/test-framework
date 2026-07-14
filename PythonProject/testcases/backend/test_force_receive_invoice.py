@@ -9,14 +9,6 @@ from utils.assemble_data import convert_receipt_data
 class TestForceReceiveInvoice:
     DATA_KEY = "data_3"
 
-    def setup_class(self, fixed_data):
-        test_data = fixed_data.get(self.DATA_KEY)
-        self.invoice_nos = test_data.get("invoice_nos")
-        self.supplier_name = test_data.get("supplier_name")
-        self.receipt_nos = test_data.get("receipt_nos")
-        self.return_nos = test_data.get("return_nos")
-        self.invoice_no = self.invoice_nos[0]
-
     @allure.story("查询未结算收/退货单")
     @pytest.mark.p0
     @pytest.mark.order(1)
@@ -133,15 +125,16 @@ class TestForceReceiveInvoice:
                 if not has_pending_red_invoices:
                     admin_client.send_and_validate("POST", f"/api/v1/admin/srm/three-way-match/{match_ids[0]}/push-settlement",
                                                json={})
-                    with allure.step("步骤4：查询核票详情-验证推送结果"):
-                        result_json = self._invoice_verify_query(admin_client, context, match_ids[0])
-                        assert context["invoice_push_status"] == 2
-                        settle_no = result_json["data"].get("records", [])[0].get("settleNo")
-                        test_data = {
-                            "matchId": match_ids,
-                            "invoiceNo": self.invoice_nos,
-                            "settleNo": settle_no
-                        }
-                        file_helper.append_json(test_data, "test.json")
                 else:
-                    print("存在未结算红票，需要走红蓝对冲")
+                    pytest.step("存在未结算红票，需要走红蓝对冲")
+
+        with allure.step("步骤4：查询核票详情-验证推送结果"):
+            result_json = self._invoice_verify_query(admin_client, context, match_ids[0])
+            assert context["invoice_push_status"] == 2
+            settle_no = result_json["data"].get("records", [])[0].get("settleNo")
+            test_data = {
+                "matchId": match_ids,
+                "invoiceNo": self.invoice_nos,
+                "settleNo": settle_no
+            }
+            file_helper.append_json(test_data, "test.json")

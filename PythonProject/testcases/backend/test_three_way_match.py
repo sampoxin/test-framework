@@ -4,14 +4,8 @@ import pytest
 
 @allure.epic("三单匹配")
 @allure.feature("收票核票")
+@pytest.mark.parametrize("setup_test_data",["data_1"],indirect=True)
 class TestThreeWayMatch:
-    DATA_KEY = "data_1"
-
-    def setup_class(self, fixed_data):
-        test_data = fixed_data.get(self.DATA_KEY)
-        self.invoice_no = test_data.get("invoice_nos")[0]
-        self.receipt_nos = test_data.get("receipt_nos")
-
     @allure.story("收票")
     @pytest.mark.p0
     @pytest.mark.order(1)
@@ -181,15 +175,16 @@ class TestThreeWayMatch:
                 if not has_pending_red_invoices:
                     admin_client.send_and_validate("POST", f"/api/v1/admin/srm/three-way-match/{match_id}/push-settlement",
                                         json={})
-                    with allure.step("步骤4：查询核票详情-验证推送结果"):
-                        result_json = self._invoice_verify_query(admin_client, context, self.invoice_no)
-                        assert context["invoice_push_status"] == 2
-                        settle_no = result_json["data"].get("records", [])[0].get("settleNo")
-                        test_data = {
-                            "matchId": match_id,
-                            "invoiceNo": self.invoice_no,
-                            "settleNo": settle_no
-                        }
-                        file_helper.write_json(test_data, "test.json")
                 else:
-                    print("存在未结算红票，需要走红蓝对冲")
+                    pytest.step("存在未结算红票，需要走红蓝对冲")
+
+        with allure.step("步骤4：查询核票详情-验证推送结果"):
+            result_json = self._invoice_verify_query(admin_client, context, self.invoice_no)
+            assert context["invoice_push_status"] == 2
+            settle_no = result_json["data"].get("records", [])[0].get("settleNo")
+            test_data = {
+                "matchId": match_id,
+                "invoiceNo": self.invoice_nos,
+                "settleNo": settle_no
+            }
+            file_helper.append_json(test_data, "test.json")
