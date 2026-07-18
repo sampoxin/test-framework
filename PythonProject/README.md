@@ -58,6 +58,70 @@ pytest testcases/test_performance.py --benchmark-html=benchmark_report.html
 
 ---
 
+## 小程序自动化测试（Minium）
+
+### 1. 运行命令
+
+```
+python -m minium.framework.loader -c mini/config.json -s mini/suite.json
+```
+
+### 2. 目录结构
+
+```
+mini/
+├── config.json          # Minium 配置文件
+├── suite.json           # 测试套件配置
+└── pages/
+    ├── base_page.py     # 页面基类
+    └── userinfo_page.py # 用户信息页 Page Object
+
+testcases/miniapp/
+└── test_user_info.py    # 小程序测试用例
+```
+
+### 3. 测试用例编写
+
+```python
+import minium
+from mini.pages.userinfo_page import UserInfoPage
+
+class TestMiniUserInfo(minium.MiniTest):
+    def setUp(self):
+        self.user_info_page = UserInfoPage(self)
+
+    def test_01_view_user_info_page(self):
+        self.user_info_page.open()
+        self.user_info_page.wait_for_user_info()
+        assert self.user_info_page.is_at_user_info_page()
+```
+
+### 4. 常见问题与处理
+
+#### 4.1 NutUI Picker 滚轮滑动
+
+NutUI Picker 的触摸事件需使用 `move()` 方法，并设置 `move_delay=500` 避免触发惯性动画导致确认按钮失效：
+
+```python
+picker.move(0, -36, move_delay=500, smooth=True)
+```
+
+
+#### 4.2 测试方法执行顺序
+
+Minium 按测试方法名的字母顺序执行，通过数字前缀控制顺序：
+
+```python
+def test_01_xxx(self): ...
+def test_02_xxx(self): ...
+```
+
+#### 4.3 页面状态保持
+
+Minium 默认每个测试方法前会重启小程序（由 `config.json` 中 `auto_relaunch` 控制）。若用例间需要保持页面状态，可在 `setUp` 中重新导航到目标页面。
+
+---
+
 ## Locust 性能测试
 
 ### 1. 简介

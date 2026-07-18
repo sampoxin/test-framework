@@ -6,11 +6,20 @@ import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 if __name__ == "__main__":
-    test_case = [
+    # 后端接口测试用例
+    test_case_backend = [
         "testcases/backend/"
     ]
+
+    # 小程序测试用例
+    test_case_miniapp = [
+        "testcases/miniapp/test_personal.py",
+        "testcases/miniapp/test_user_info.py"
+    ]
+
     sys.exit(pytest.main([
-        *test_case,
+        *test_case_miniapp,
         "--alluredir=reports/allure-results",
-        "-v"
+        "-v",
+        "--no-cov",
     ]))

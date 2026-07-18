@@ -1,10 +1,13 @@
 import minium
+import pytest
+import allure
 import time
 from mini.pages.userinfo_page import UserInfoPage
 from utils.logger import logger
 from utils.tools import nickname
 
 
+@allure.story("用户信息页")
 class TestMiniUserInfo(minium.MiniTest):
     """用户信息页功能测试"""
     UID = "1609"
@@ -12,6 +15,7 @@ class TestMiniUserInfo(minium.MiniTest):
     def setUp(self):
         self.user_info_page = UserInfoPage(self)
 
+    @pytest.mark.order(20)
     def test_01_view_user_info_page(self):
         """查看用户信息页标题"""
         logger.info("查看用户信息页标题")
@@ -20,6 +24,7 @@ class TestMiniUserInfo(minium.MiniTest):
         assert self.user_info_page.get_field_value("UID") == self.UID, "用户ID不对"
         assert self.user_info_page.is_at_user_info_page(), "应在用户信息页页面"
 
+    @pytest.mark.order(21)
     def test_02_modify_gender(self):
         """修改性别"""
         logger.info("修改性别")
@@ -32,6 +37,7 @@ class TestMiniUserInfo(minium.MiniTest):
         else:
             assert self.user_info_page.get_gender() == '女', "修改性别失败"
 
+    @pytest.mark.order(22)
     def test_03_modify_nickname(self):
         """修改昵称"""
         logger.info("修改昵称")
@@ -40,6 +46,7 @@ class TestMiniUserInfo(minium.MiniTest):
         logger.info(f"修改昵称结果: {result}")
         assert result == new_name, f"昵称修改失败，期望: {new_name}，实际: {result}"
 
+    @pytest.mark.order(23)
     def test_04_modify_birthday(self):
         """修改生日（每年仅支持修改一次）"""
         logger.info("修改生日")
@@ -53,6 +60,7 @@ class TestMiniUserInfo(minium.MiniTest):
         logger.info(f"修改后生日: {new_birthday}")
         assert new_birthday != old_birthday, f"生日未变更: {old_birthday}"
 
+    @pytest.mark.order(24)
     def test_05_click_phone_field(self):
         """修改手机号（验证跳转到绑定手机页）"""
         logger.info("修改手机号")
@@ -63,9 +71,12 @@ class TestMiniUserInfo(minium.MiniTest):
         self.user_info_page.to_back()
         self.user_info_page.wait_for_user_info()
 
+    @pytest.mark.order(25)
     def test_06_tap_avatar(self):
         """修改头像（触发微信原生chooseAvatar，验证点击不报错）"""
         logger.info("修改头像")
+        self.user_info_page.open()
+        self.user_info_page.wait_for_user_info()
         self.user_info_page.tap_avatar()
         time.sleep(1)
         # chooseAvatar 触发微信原生选择对话框，minium 无法自动化选择图片

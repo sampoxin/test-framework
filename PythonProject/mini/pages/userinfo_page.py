@@ -36,6 +36,10 @@ class UserInfoPage(BasePage):
     def is_at_user_info_page(self) -> bool:
         return "userInfo" in self.get_page_path()
 
+    def is_show_uid(self) -> bool:
+        """是否显示用户 UID"""
+        return bool(self.get_field_value("UID"))
+
     def is_at_bind_phone_page(self) -> bool:
         return "bindPhone" in self.get_page_path()
 

@@ -31,12 +31,12 @@ class PersonalPage(BasePage):
         """是否在登录页"""
         return "personal" in self.get_page_path()
 
-    def login_or_user_box(self):
-        """用户框"""
-        try:
-            return self.find_element(self.CSS_NAME_BOX, max_timeout=5)
-        except Exception:
-            return self.find_element(self.CSS_LOGIN_BOX, max_timeout=5)
+    def login_or_user_box(self, max_timeout=5):
+        """用户框（已登录返回 name-box，未登录返回 login-box）"""
+        name_box = self.find_element(self.CSS_NAME_BOX, max_timeout=max_timeout)
+        if name_box:
+            return name_box
+        return self.find_element(self.CSS_LOGIN_BOX, max_timeout=max_timeout)
 
     def is_logged_in(self) -> bool:
         """是否登录"""
@@ -45,7 +45,10 @@ class PersonalPage(BasePage):
     def tap_login_or_name(self):
         """点击登录框或用户名框"""
         element = self.login_or_user_box()
-        element.tap()
+        if element:
+            element.tap()
+        else:
+            logger.warning("未找到登录框或用户名框")
         return self
 
     def wait_for_login_or_name(self):
