@@ -7,7 +7,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 if __name__ == "__main__":
     test_case = [
-        "testcases/backend/test_three_way_match.py"
+        "testcases/backend/"
     ]
     sys.exit(pytest.main([
         *test_case,

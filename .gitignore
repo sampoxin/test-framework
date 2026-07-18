@@ -8,4 +8,5 @@ log/
 htmlcov/
 .coverage
 locust_tests/study/
-data/output/
+PythonProject/data/output/
+PythonProject/outputs/

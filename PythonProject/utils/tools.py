@@ -57,5 +57,9 @@ def generate_value(rule):
         return img[random.randint(0, len(img)-1)]
     return None
 
+def nickname():
+    return fake.name()
+
 if __name__ == "__main__":
-    print(resolve_dynamic_fields({"memberName":"DYNAMIC_text_10"}))
+    # print(resolve_dynamic_fields({"memberName":"DYNAMIC_text_10"}))
+    print(nickname())

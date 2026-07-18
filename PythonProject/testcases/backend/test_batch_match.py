@@ -145,7 +145,7 @@ class TestBatchMatch:
                 result_json = admin_client.send_and_validate("POST", "/api/v1/admin/srm/three-way-match/page",
                                                              json={"pageNum": 1, "pageSize": 10,
                                                                    "invoiceNo": invoice_no})
-                settle_no = result_json["data"].get("records", [])[0].get("settleNo")
+                settle_no = result_json["data"].get("records", [])[0].get("settleNo", "")
                 test_data = {
                     "matchId": item["match_id"],
                     "invoiceNo": invoice_no,

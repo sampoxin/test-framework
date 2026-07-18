@@ -1,0 +1,8 @@
+{
+  "pkg_list": [
+    {
+      "pkg": "testcases.miniapp.test_user_info",
+      "case_list": ["test_*"]
+    }
+  ]
+}

@@ -67,11 +67,11 @@ def setup_clean_data(request):
             try:
                 from utils.db_helper import clean_three_way_match_data
                 clean_three_way_match_data(match_ids=match_ids)
-                logger.info(f"[清理] {request.cls.__name__} 清理完成 match_ids={match_ids}")
+                logger.info(f"[清理]清理完成 match_ids={match_ids}")
             except Exception as e:
-                logger.warning(f"[清理] {request.cls.__name__} 清理失败: {e}，请手动检查数据库")
+                logger.warning(f"[清理]清理失败: {e}，请手动检查数据库")
         else:
-            logger.info(f"[清理] {request.cls.__name__} 未找到发票号，跳过清理")
+            logger.info(f"[清理]未找到发票号，跳过清理")
 
     yield  # 用例执行，跑完后数据保留不再清理
 
@@ -100,17 +100,16 @@ def _extract_match_ids_from_latest_file():
     if not isinstance(data, list):
         data = [data]
 
-    match_ids = set()
+    match_ids = []
     for item in data:
         match_id = item.get("matchId")
         if isinstance(match_id, list):
-            match_ids.update(match_id)
-        elif isinstance(match_id, str):
-            match_ids.add(match_id)
+            match_ids.extend(match_id)
+        else:
+            match_ids.append(match_id)
 
-    result = [no for no in match_ids if no]
-    logger.info(f"[清理] 从文件中提取到发票号: {result}")
-    return result
+    logger.info(f"[清理] 从文件中提取到 matchIds: {match_ids}")
+    return match_ids
 
 @pytest.fixture(scope="session")
 def file_helper():

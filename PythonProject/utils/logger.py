@@ -33,3 +33,5 @@ def setup_logger(name=None):
 
         logger.propagate = False
     return logger
+
+logger = setup_logger()
