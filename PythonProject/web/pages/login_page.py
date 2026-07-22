@@ -1,4 +1,5 @@
 """后台管理系统 - 登录页 Page Object"""
+import allure
 from web.pages.base_page import BasePage
 from utils.logger import logger
 
@@ -11,13 +12,15 @@ class LoginPage(BasePage):
     INPUT_PASSWORD = 'input[placeholder="请输入密码"]'
     BTN_LOGIN = 'button:has-text("登 录")'
 
-    def open(self):
+    @allure.step("打开登录页")
+    def open(self) -> "LoginPage":
         """打开登录页"""
         self.navigate("/#/auth/login")
         self.wait_for_load()
         return self
 
-    def login(self, account: str, password: str):
+    @allure.step("登录账号: {account}")
+    def login(self, account: str, password: str) -> "LoginPage":
         """执行登录"""
         logger.info(f"登录账号: {account}")
         self.page.fill(self.INPUT_ACCOUNT, account)

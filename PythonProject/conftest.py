@@ -8,8 +8,8 @@ from config import BASE_URL, TIMEOUT, CURRENT_ENV
 from utils.dingtalk_notifier import DingTalkNotifier
 
 TEST_USERS = [
-    {"phone": "15973199394", "areaCode": "86", "registerChannel": "WX_APPLET"},
-    {"phone": "12222220010", "areaCode": "86", "registerChannel": "WX_APPLET"}
+    {"phone": os.environ.get("TEST_USER_PHONE"), "areaCode": "86", "registerChannel": "WX_APPLET"},
+    {"phone": os.environ.get("TEST_USER_PHONE_2"), "areaCode": "86", "registerChannel": "WX_APPLET"}
 ]
 
 # 全局变量存储测试结果
@@ -101,6 +101,33 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(getattr(pytest.mark, data.get('mark')))
 
 
+def admin_login(client):
+    """管理员登录（同时作为 auth_callback 供 Token 过期时自动刷新）"""
+    resp = client.send("POST", "/api/v1/admin/auth/login", json={
+        "account": os.environ.get("ADMIN_ACCOUNT", ""),
+        "password": os.environ.get("ADMIN_PASSWORD", ""),
+        "grantType": "pwd"
+    })
+    resp_data = resp.json().get("data", {})
+    assert resp_data.get("authToken"), "后台管理员登录失败，请检查 .env 中 ADMIN_ACCOUNT/ADMIN_PASSWORD"
+    client.set_token({
+        "mmhm-token": resp_data.get("authToken"),
+        "x-tenant": str(resp_data.get("tenantId"))
+    })
+
+
+def user_login(client, user):
+    """前端用户登录（同时作为 auth_callback 供 Token 过期时自动刷新）"""
+    resp = client.send("POST", "/api/v1/wx-mini/member/login/test", json=user)
+    resp_data = resp.json().get("data", {})
+    assert resp_data.get("token"), "登录失败"
+    client.set_token({
+        "auth-token": resp_data.get("token"),
+        "x-user": str({"id": resp_data.get("memberId")})
+    })
+    client.user_data = resp_data
+
+
 @pytest.fixture(scope="session")
 def client(request):
     worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'master')
@@ -116,25 +143,16 @@ def client(request):
     user = TEST_USERS[worker_num % len(TEST_USERS)]
 
     client = ApiClient(BASE_URL, TIMEOUT)
-    resp = client.send("POST", "/api/v1/wx-mini/member/login/test", json=user)
-    resp_data = resp.json().get("data", {})
-    assert resp_data.get("token"), "登录失败"
-    client.set_token({
-        "auth-token": resp_data.get("token"),
-        "x-user": str({"id": resp_data.get("memberId")})
-    })
-    client.user_data = resp_data
+    user_login(client, user)
+    # Token 过期时自动刷新
+    client.set_auth_callback(lambda c: user_login(c, user))
     yield client
 
 @pytest.fixture(scope="session")
 def admin_client():
     client = ApiClient(BASE_URL, TIMEOUT)
-    resp = client.send("POST", "/api/v1/admin/auth/login", json={"account":"15973199394","password":"Zj8tUHRHPlT7d+sCSl+bKJdbSvGRP2v6oVyyX1N6PM/bENGi7Kv98WsH/NTEbhso7seXjXU4svdEPHItM2dHolDCj5LmOyKRlbaRnOwdEPbGXzjaEANGr+Y/BhuxTkbFGG9lA2XHCwDEqddjEzxwSDB8y95vORrbO+TFZ42gGoQ=","grantType":"pwd"})
-    resp_data = resp.json().get("data", {})
-    assert resp_data.get("authToken"), "登录失败"
-    client.set_token({
-        "mmhm-token": resp_data.get("authToken"),
-        "x-tenant": str(resp_data.get("tenantId"))
-    })
+    admin_login(client)
+    # Token 过期时自动刷新
+    client.set_auth_callback(admin_login)
     yield client
 

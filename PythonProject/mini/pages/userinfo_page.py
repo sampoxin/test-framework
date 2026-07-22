@@ -1,6 +1,8 @@
 """用户信息页 Page Object"""
-import minium
 import time
+from typing import Any, Optional
+
+import allure
 from .base_page import BasePage
 from utils.logger import logger
 
@@ -19,16 +21,18 @@ class UserInfoPage(BasePage):
     EDIT_ICON = ".editIcon_L0kcW"
     AVATAR_BTN = ".avatar-btn_PlGVV"
 
-    def __init__(self, mini: minium.Minium):
+    def __init__(self, mini: Any) -> None:
         super().__init__(mini)
 
-    def open(self):
+    @allure.step("打开用户信息页")
+    def open(self) -> "UserInfoPage":
         """跳转到用户信息页（已在该页则跳过）"""
         if not self.is_at_user_info_page():
             self.navigate_to(self.PATH)
         return self
 
-    def to_back(self):
+    @allure.step("返回上一页")
+    def to_back(self) -> "UserInfoPage":
         """返回上一页"""
         self.go_back()
         return self
@@ -43,10 +47,11 @@ class UserInfoPage(BasePage):
     def is_at_bind_phone_page(self) -> bool:
         return "bindPhone" in self.get_page_path()
 
-    def wait_for_user_info(self):
+    def wait_for_user_info(self) -> bool:
         return self.wait_for_page(self.PATH)
 
     # ========== 数据获取方法 ==========
+
     def get_gender(self) -> str:
         elem = self.find_element(self.USER_INFO, inner_text='男')
         return '男' if elem else '女'
@@ -71,7 +76,9 @@ class UserInfoPage(BasePage):
         return val
 
     # ========== 修改性别 ==========
-    def modify_gender(self, target_gender: str = None):
+
+    @allure.step("修改性别")
+    def modify_gender(self, target_gender: Optional[str] = None) -> Optional[int]:
         """修改性别，不传 target_gender 则自动切换"""
         if not self.is_at_user_info_page():
             self.open().wait_for_user_info()
@@ -102,18 +109,22 @@ class UserInfoPage(BasePage):
         return target_idx
 
     # ========== 修改昵称 ==========
+
+    @allure.step("修改昵称: {new_name}")
     def modify_nickname(self, new_name: str) -> str:
         """修改昵称（最长10字符），失焦自动保存"""
         if not self.is_at_user_info_page():
             self.open().wait_for_user_info()
 
-        self.input(self.NICK_INPUT, text = new_name)
+        self.input(self.NICK_INPUT, text=new_name)
         # 点击页面其他区域触发 blur 保存
         self.tap(self.EDIT_ICON)
-        time.sleep(0.5)
+        time.sleep(0.5)  # 等待 blur 保存
         return self.get_nickname()
 
     # ========== 修改生日 ==========
+
+    @allure.step("修改生日")
     def modify_birthday(self, day_steps: int = 1) -> bool:
         """修改生日（滑动日期选择器的"日"列）
 
@@ -151,12 +162,16 @@ class UserInfoPage(BasePage):
         return self._confirm_birthday_change()
 
     # ========== 修改头像 ==========
-    def tap_avatar(self):
+
+    @allure.step("点击头像")
+    def tap_avatar(self) -> None:
         """点击头像区域，触发微信 chooseAvatar 原生选择"""
         self.tap(self.AVATAR_BTN)
 
     # ========== 修改手机号 ==========
-    def click_phone_field(self):
+
+    @allure.step("点击手机号行")
+    def click_phone_field(self) -> bool:
         """点击手机号行，跳转到绑定手机页"""
         if not self.is_at_user_info_page():
             self.open().wait_for_user_info()
@@ -164,11 +179,12 @@ class UserInfoPage(BasePage):
         phone = self.get_field_value("手机号")
         logger.info(f"当前手机号: {phone}")
         self.tap(self.USER_INFO, inner_text=phone)
-        time.sleep(2)
+        time.sleep(2)  # 等待页面跳转
         return self.is_at_bind_phone_page()
 
     # ========== 内部方法 ==========
-    def _tap_confirm(self, max_retries: int = 3):
+
+    def _tap_confirm(self, max_retries: int = 3) -> None:
         """点击确认按钮，通过重新查找按钮判断弹窗是否已关闭"""
         for attempt in range(max_retries):
             # 每次都重新查找，避免引用已消失的 DOM 元素
@@ -177,10 +193,10 @@ class UserInfoPage(BasePage):
                 logger.info(f"弹窗已关闭 (第{attempt + 1}次)")
                 return
             btns[0].tap()
-            time.sleep(0.8)
+            time.sleep(0.8)  # 等待弹窗关闭动画
         logger.warning(f"点击确认按钮 {max_retries} 次后弹窗仍未关闭")
 
-    def _swipe_picker_column(self, picker_elem, steps: int):
+    def _swipe_picker_column(self, picker_elem: Any, steps: int) -> None:
         """滑动单个选择器列
         Args:
             picker_elem: 选择器列元素
@@ -192,11 +208,11 @@ class UserInfoPage(BasePage):
 
     def _confirm_birthday_change(self) -> bool:
         """确认生日修改（点击确认弹窗）"""
-        ok_btn = self.find_element(self.CONFIRM_OK,inner_text="确定",max_timeout=5)
+        ok_btn = self.find_element(self.CONFIRM_OK, inner_text="确定", max_timeout=5)
         if ok_btn:
             ok_btn.tap()
             logger.info("已确认生日修改")
-            time.sleep(1)
+            time.sleep(1)  # 等待页面更新
             return True
         logger.warning("未找到确认弹窗确定按钮")
         return False

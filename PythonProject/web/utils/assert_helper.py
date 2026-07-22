@@ -1,4 +1,5 @@
 """断言辅助工具：区分元素缺失和其他错误"""
+import allure
 from playwright.sync_api import Page, expect as pw_expect
 from utils.logger import logger
 
@@ -18,13 +19,16 @@ class AssertHelper:
         ah.assert_text_equals("欢迎登录", "欢迎登录")       # 文本匹配
         ah.assert_url_contains("/home")                    # URL 包含
         ah.assert_true(login_page.is_login_success(), "登录应成功")  # 逻辑断言
+        ah.assert_toast("操作成功")                        # Toast 消息断言
+        ah.assert_enabled("确 定", by="text")               # 控件可用
     """
 
-    def __init__(self, page: Page):
+    def __init__(self, page: Page) -> None:
         self.page = page
 
     # ========== 元素断言（找不到 → ElementNotFoundError） ==========
 
+    @allure.step("断言元素可见: {selector_desc}")
     def assert_visible(self, selector_desc: str, by: str = "text",
                        timeout: int = 5000) -> "AssertHelper":
         """
@@ -43,6 +47,7 @@ class AssertHelper:
             raise ElementNotFoundError(msg) from e
         return self
 
+    @allure.step("断言元素隐藏: {selector_desc}")
     def assert_hidden(self, selector_desc: str, by: str = "text",
                       timeout: int = 5000) -> "AssertHelper":
         """断言元素不可见"""
@@ -55,6 +60,7 @@ class AssertHelper:
             raise ElementNotFoundError(msg) from e
         return self
 
+    @allure.step("断言文本等于: expected='{expected}'")
     def assert_text_equals(self, selector_desc: str, expected: str,
                            by: str = "text") -> "AssertHelper":
         """
@@ -81,6 +87,7 @@ class AssertHelper:
             raise ElementNotFoundError(msg) from e
         return self
 
+    @allure.step("断言文本包含: expected='{expected}'")
     def assert_text_contains(self, selector_desc: str, expected: str,
                              by: str = "text") -> "AssertHelper":
         """断言元素文本包含期望値"""
@@ -126,6 +133,102 @@ class AssertHelper:
             raise ElementNotFoundError(msg) from e
         return self
 
+    # ========== Toast / Message 断言 ==========
+
+    @allure.step("断言 Toast 消息: expected='{expected}'")
+    def assert_toast(self, expected: str, toast_type: str = "",
+                     timeout: int = 5000) -> "AssertHelper":
+        """
+        断言 Toast/Message 消息内容
+
+        :param expected: 期望的 Toast 文本内容（部分匹配）
+        :param toast_type: 类型过滤 success/error/warning/info（可选）
+        :param timeout: 超时毫秒
+        """
+        # Ant Design Message 通用选择器
+        selectors = [".ant-message-notice-content", ".ant-message-custom-content"]
+        if toast_type:
+            selectors = [f".ant-message-{toast_type}"]
+
+        for selector in selectors:
+            try:
+                locator = self.page.locator(selector)
+                if locator.is_visible(timeout=timeout):
+                    actual = locator.text_content() or ""
+                    if expected in actual:
+                        logger.info(f"[Toast] 断言通过: '{expected}' 包含于 '{actual}'")
+                        return self
+            except Exception:
+                continue
+
+        # 兜底：搜索所有可见的 message 元素
+        all_messages = self.page.locator(".ant-message-notice").all()
+        collected = []
+        for msg in all_messages:
+            try:
+                text = msg.text_content() or ""
+                collected.append(text)
+                if expected in text:
+                    logger.info(f"[Toast] 断言通过: '{expected}' 包含于 '{text}'")
+                    return self
+            except Exception:
+                continue
+
+        msg = f"[断言失败] 未找到匹配的 Toast 消息: expected='{expected}', 当前消息={collected}"
+        logger.warning(msg)
+        raise AssertionError(msg)
+
+    @allure.step("断言 Toast 成功: '{expected}'")
+    def assert_toast_success(self, expected: str = "", timeout: int = 5000) -> "AssertHelper":
+        """断言成功类型 Toast（绿色提示）"""
+        return self.assert_toast(expected, toast_type="success", timeout=timeout)
+
+    @allure.step("断言 Toast 错误: '{expected}'")
+    def assert_toast_error(self, expected: str = "", timeout: int = 5000) -> "AssertHelper":
+        """断言错误类型 Toast（红色提示）"""
+        return self.assert_toast(expected, toast_type="error", timeout=timeout)
+
+    # ========== 控件状态断言 ==========
+
+    @allure.step("断言控件可用: {selector_desc}")
+    def assert_enabled(self, selector_desc: str, by: str = "text",
+                       timeout: int = 5000) -> "AssertHelper":
+        """断言控件处于可用（enabled）状态"""
+        locator = self._resolve_locator(selector_desc, by)
+        try:
+            pw_expect(locator).to_be_enabled(timeout=timeout)
+        except Exception as e:
+            msg = f"[断言失败] 控件不可用: by={by}, selector={selector_desc}"
+            logger.warning(msg)
+            raise AssertionError(msg) from e
+        return self
+
+    @allure.step("断言控件禁用: {selector_desc}")
+    def assert_disabled(self, selector_desc: str, by: str = "text",
+                      timeout: int = 5000) -> "AssertHelper":
+        """断言控件处于禁用（disabled）状态"""
+        locator = self._resolve_locator(selector_desc, by)
+        try:
+            pw_expect(locator).to_be_disabled(timeout=timeout)
+        except Exception as e:
+            msg = f"[断言失败] 控件未禁用: by={by}, selector={selector_desc}"
+            logger.warning(msg)
+            raise AssertionError(msg) from e
+        return self
+
+    @allure.step("断言复选框选中: {selector_desc}")
+    def assert_checked(self, selector_desc: str, by: str = "css",
+                       timeout: int = 5000) -> "AssertHelper":
+        """断言复选框/开关处于选中状态"""
+        locator = self._resolve_locator(selector_desc, by)
+        try:
+            pw_expect(locator).to_be_checked(timeout=timeout)
+        except Exception as e:
+            msg = f"[断言失败] 控件未选中: by={by}, selector={selector_desc}"
+            logger.warning(msg)
+            raise AssertionError(msg) from e
+        return self
+
     # ========== 逻辑断言（非元素缺失 → AssertionError） ==========
 
     def assert_true(self, condition: bool, message: str = "") -> "AssertHelper":
@@ -144,6 +247,7 @@ class AssertHelper:
             raise AssertionError(msg)
         return self
 
+    @allure.step("断言 URL 包含: '{url_pattern}'")
     def assert_url_contains(self, url_pattern: str) -> "AssertHelper":
         """断言当前 URL 包含指定字符串"""
         if url_pattern not in self.page.url:

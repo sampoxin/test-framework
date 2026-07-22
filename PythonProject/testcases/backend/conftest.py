@@ -14,17 +14,14 @@ from utils.file_helper import FileHelper
 logger = setup_logger()
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'output')
+TEST_DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'test_three_way_match_data.json')
 
 
 @pytest.fixture(scope="session")
 def fixed_data():
-    """发票编号 - 全局唯一数据源，conftest和测试用例共用"""
-    return {"data_1": {"test_class": "三单匹配","invoice_nos": ["26922000000673529101"],"receipt_nos":["PO99487990000237"],"return_nos":[],"supplier_name":"宝宝兄弟(青岛)食品有限公司"},
-            "data_2": {"test_class": "强制匹配","invoice_nos": ["26312000003454746196"],"receipt_nos":["PO99487990000228"],"return_nos":[],"supplier_name":"上海英联食品饮料有限公司"},
-            "data_3": {"test_class": "强制收票","invoice_nos": [],"receipt_nos":["PO99487990000234"],"return_nos":["RO99487990000113"],"supplier_name":"上海英联食品饮料有限公司"},
-            "data_4": {"test_class": "批量匹配对冲","invoice_nos": ["26312000003662642431","26312000003776282536"],"receipt_nos":["PO99487990000243"],"return_nos":["RO99487990000110"],"supplier_name":"上海英联食品饮料有限公司"},
-            "data_5": {"test_class": "强制匹配","invoice_nos": ["26312000003216369376"],"receipt_nos":["PO99487990000217"],"return_nos":[],"supplier_name":"上海英联食品饮料有限公司"}
-        }
+    """测试数据 - 从 data/test_three_way_match_data.json 加载"""
+    with open(TEST_DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 @pytest.fixture(scope="class", autouse=True)
 def setup_test_data(request, fixed_data):
@@ -50,7 +47,6 @@ def setup_test_data(request, fixed_data):
     # 如果有发票号，默认取第一个
     if request.cls.invoice_nos:
         request.cls.invoice_no = request.cls.invoice_nos[0]
-
 
 
 @pytest.fixture(scope="session", autouse=True)

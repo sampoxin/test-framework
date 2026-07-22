@@ -56,11 +56,11 @@ ENVIRONMENTS = {
         "timeout": 30,
         "tenant": "9999",
         "db": {
-            "host": "pc-bp1s7s2q90jq4eltp.rwlb.rds.aliyuncs.com",
-            "port": 3306,
-            "user": "mall_dev_user",
-            "password": "DQKPLy%lX18GEL25",
-            "database": "mall_dev"
+            "host": os.environ.get("DB_HOST", ""),
+            "port": int(os.environ.get("DB_PORT", 3306)),
+            "user": os.environ.get("DB_USER", ""),
+            "password": os.environ.get("DB_PASSWORD", ""),
+            "database": os.environ.get("DB_NAME", "mall_dev")
         }
     },
     
@@ -74,11 +74,11 @@ ENVIRONMENTS = {
         "timeout": 30,
         "tenant": "1",
         "db": {
-            "host": "192.168.1.100",
-            "port": 3306,
-            "user": "root",
-            "password": "your_password",
-            "database": "srm"
+            "host": os.environ.get("TEST_DB_HOST", "192.168.1.100"),
+            "port": int(os.environ.get("TEST_DB_PORT", 3306)),
+            "user": os.environ.get("TEST_DB_USER", "root"),
+            "password": os.environ.get("TEST_DB_PASSWORD", ""),
+            "database": os.environ.get("TEST_DB_NAME", "srm")
         }
     },
     

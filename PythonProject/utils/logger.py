@@ -3,10 +3,14 @@ import os
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 
+# 日志级别通过环境变量 LOG_LEVEL 控制，默认 INFO
+# 可选值: DEBUG / INFO / WARNING / ERROR
+_LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
+
 def setup_logger(name=None):
     logger = logging.getLogger(name or __name__)
     if not logger.handlers:
-        logger.setLevel(logging.INFO)
+        logger.setLevel(getattr(logging, _LOG_LEVEL, logging.INFO))
         formatter = logging.Formatter("%(asctime)s - [%(levelname)s] - %(message)s")
 
         log_dir = os.path.join(os.path.dirname(__file__), '..', 'log')

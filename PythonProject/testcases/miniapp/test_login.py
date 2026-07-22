@@ -1,3 +1,5 @@
+import os
+
 import minium
 import pytest
 import allure
@@ -44,9 +46,11 @@ class TestMiniLogin(minium.MiniTest):
     def test_03_phone_login_success(self):
         """手机号+验证码登录成功"""
         logger.info("手机号+验证码登录成功")
+        phone = os.environ.get("TEST_USER_PHONE", "")
+        code = os.environ.get("TEST_VERIFY_CODE", "")
         result = self.login_page.login_with_phone(
-            phone="15973199394",
-            code="912391"
+            phone=phone,
+            code=code
         )
         if result:
             logger.info("手机号登录成功")

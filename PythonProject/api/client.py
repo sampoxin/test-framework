@@ -1,24 +1,57 @@
 import time
 import requests
+from typing import Any, Dict, List, Optional, Callable
 from functools import wraps
-import random
 from config import TENANT
-from utils.logger import setup_logger
+from utils.logger import logger
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from api.exceptions import HttpError, BusinessError, AuthExpiredError
+
+
+# ==================== 日志脱敏 ====================
+
+_SENSITIVE_KEYS = frozenset({
+    "password", "authToken", "token", "secret",
+    "mmhm-token", "auth-token", "x-user", "authorization",
+    "ADMIN_PASSWORD", "DB_PASSWORD",
+})
+
+
+def _mask_value(value: Any) -> str:
+    """对敏感值脱敏：保留前2后2字符"""
+    if isinstance(value, str) and len(value) > 6:
+        return value[:2] + "***" + value[-2:]
+    return "***"
+
+
+def _mask_dict(obj: Any) -> Any:
+    """递归脱敏 dict/list 中的敏感字段"""
+    if isinstance(obj, dict):
+        return {
+            k: _mask_value(v) if k.lower() in {s.lower() for s in _SENSITIVE_KEYS}
+            else _mask_dict(v)
+            for k, v in obj.items()
+        }
+    if isinstance(obj, list):
+        return [_mask_dict(item) for item in obj]
+    return obj
 
 
 class ApiClient:
-    def __init__(self, base_url, timeout, think_time=0):
-        self.base_url = base_url
-        self.timeout = timeout
-        self.history = []
-        self.logger = setup_logger()
-        self.think_time = think_time
+    def __init__(self, base_url: str, timeout: int, think_time: int = 0):
+        self.base_url: str = base_url
+        self.timeout: int = timeout
+        self.history: List[Dict[str, Any]] = []
+        self.logger = logger
+        self.think_time: int = think_time
+
+        # Token 刷新：外部设置此回调，401 时自动调用
+        self._login_callback: Optional[Callable] = None
 
         # 保持会话
-        self.session = requests.Session()
-        self.session.headers.update({"Content-Type": "application/json","x-tenant": TENANT})
+        self.session: requests.Session = requests.Session()
+        self.session.headers.update({"Content-Type": "application/json", "x-tenant": TENANT})
 
         # 重试配置
         retry = Retry(
@@ -30,20 +63,37 @@ class ApiClient:
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
 
+    def set_auth_callback(self, callback: Callable[["ApiClient"], None]) -> None:
+        """
+        设置 Token 刷新回调
+
+        用法（conftest.py 中）:
+            def refresh_token(client):
+                resp = client.send("POST", "/api/v1/admin/auth/login", json={...})
+                token = resp.json()["data"]["authToken"]
+                client.set_token({"mmhm-token": token})
+
+            client.set_auth_callback(refresh_token)
+        """
+        self._login_callback = callback
 
     def req_log(func):
         @wraps(func)
-        def wrapper(self, method, path, **params):
+        def wrapper(self, method: str, path: str, **params) -> requests.Response:
             start_time = time.time()
             url = self.base_url + path
             method = method.upper()
-            self.logger.info(f"开始请求: [{method}] {url} params={params}")
+            # 日志脱敏：请求参数
+            safe_params = _mask_dict(params)
+            self.logger.info(f"开始请求: [{method}] {url} params={safe_params}")
 
             try:
                 response = func(self, method, url, **params)
                 elapsed = time.time() - start_time
                 try:
-                    self.logger.info(f"[{method}] {url} 响应结果:{response.json()} 耗时:{elapsed:.3f}s")
+                    # 日志脱敏：响应体
+                    safe_resp = _mask_dict(response.json())
+                    self.logger.info(f"[{method}] {url} 响应结果:{safe_resp} 耗时:{elapsed:.3f}s")
                 except ValueError:
                     self.logger.info(f"[{method}] {url} 响应非JSON 耗时:{elapsed:.3f}s")
                 self.history.append({
@@ -59,8 +109,9 @@ class ApiClient:
         return wrapper
 
     @req_log
-    def send(self, method, url, params=None,json=None,data=None):
-        # 显式参数params/json/data 分开传
+    def send(self, method: str, url: str, params: Optional[Dict] = None,
+             json: Optional[Any] = None, data: Optional[Any] = None) -> requests.Response:
+        """发送 HTTP 请求"""
         response = self.session.request(
             method,
             url,
@@ -71,28 +122,64 @@ class ApiClient:
         )
         if self.think_time > 0:
             time.sleep(self.think_time)
-        else:
-            time.sleep(random.uniform(0.5, 2))
         return response
 
-    def send_and_validate(self, method, url, params=None, json=None, data=None):
-        """发送请求并自动断言 status_code==200 和 code==Success，直接返回JSON"""
-        result = self.send(method, url, params=params, json=json, data=data)
-        assert result.status_code == 200, f"请求失败 status={result.status_code} url={url}"
-        result_json = result.json()
-        assert result_json["code"] == "Success", f"业务失败 code={result_json['code']} msg={result_json.get('msg', '')} url={url}"
-        return result_json
-        
+    def send_and_validate(self, method: str, url: str, params: Optional[Dict] = None,
+                          json: Optional[Any] = None, data: Optional[Any] = None) -> Dict[str, Any]:
+        """
+        发送请求并自动断言 status_code==200 和 code==Success，直接返回 JSON
 
-    def set_token(self, token):
+        Raises:
+            HttpError: HTTP 状态码非 200
+            BusinessError: 业务码 code != Success
+            AuthExpiredError: Token 过期且刷新失败
+        """
+        result = self.send(method, url, params=params, json=json, data=data)
+
+        # 401 → 尝试刷新 Token 并重试
+        if result.status_code == 401 and self._login_callback:
+            self.logger.warning(f"[Token过期] {method} {url} → 尝试刷新Token")
+            try:
+                self._login_callback(self)
+                result = self.send(method, url, params=params, json=json, data=data)
+            except Exception as e:
+                raise AuthExpiredError(f"Token 刷新失败: {e}") from e
+
+        if result.status_code != 200:
+            raise HttpError(method, url, result.status_code, result.text)
+
+        result_json = result.json()
+
+        # 业务 Token 失效
+        if result_json.get("code") == "Unauthorized":
+            if self._login_callback:
+                self.logger.warning(f"[Token失效] {method} {url} → 尝试刷新Token")
+                try:
+                    self._login_callback(self)
+                    result = self.send(method, url, params=params, json=json, data=data)
+                    result_json = result.json()
+                except Exception as e:
+                    raise AuthExpiredError(f"Token 刷新失败: {e}") from e
+            else:
+                raise AuthExpiredError(f"认证过期: {method} {url}")
+
+        if result_json["code"] != "Success":
+            raise BusinessError(method, url, result_json["code"],
+                                result_json.get("msg", ""), json)
+        return result_json
+
+    def set_token(self, token: Dict[str, str]) -> None:
+        """设置认证 Token 到 Session Headers"""
         self.session.headers.update(token)
 
-    def get_history(self):
+    def get_history(self) -> List[Dict[str, Any]]:
+        """获取请求历史记录"""
         return self.history
 
-    def stats(self):
+    def stats(self) -> None:
+        """输出请求统计"""
         total_requests = len(self.history)
-        request_count = {}
+        request_count: Dict[str, int] = {}
         for request in self.history:
             method = request.get("method")
             request_count[method] = request_count.get(method, 0) + 1

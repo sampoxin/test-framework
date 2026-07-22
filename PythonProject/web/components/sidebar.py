@@ -1,6 +1,7 @@
 """
 后台管理系统 - 侧边栏导航组件（Ant Design Pro 菜单）
 """
+import allure
 from playwright.sync_api import Page
 from utils.logger import logger
 
@@ -14,21 +15,23 @@ class Sidebar:
     SUB_MENU_OPEN = ".ant-menu-submenu-open"            # 已展开的子菜单
     SELECTED_ITEM = ".ant-menu-item-selected"           # 当前选中菜单项
 
-    def __init__(self, page: Page):
+    def __init__(self, page: Page) -> None:
         self.page = page
 
     # ------------------------------------------------------------------
     # 核心操作
     # ------------------------------------------------------------------
 
-    def click_menu(self, name: str):
+    @allure.step("侧边栏点击菜单: {name}")
+    def click_menu(self, name: str) -> "Sidebar":
         """点击叶子菜单项（无子菜单）"""
         logger.info(f"侧边栏点击菜单: {name}")
         self.page.locator(f"{self.MENU_ITEM}:has-text('{name}')").click()
         self.page.wait_for_load_state("networkidle")
         return self
 
-    def expand_and_click(self, parent: str, child: str, sub: str = ""):
+    @allure.step("侧边栏展开 [{parent}] → 点击 [{child}]")
+    def expand_and_click(self, parent: str, child: str, sub: str = "") -> "Sidebar":
         """
         展开父菜单并点击子菜单项
         :param parent: 一级菜单名称（展开）
@@ -48,7 +51,8 @@ class Sidebar:
             self.page.wait_for_load_state("networkidle")
         return self
 
-    def expand_menu(self, name: str):
+    @allure.step("侧边栏展开菜单: {name}")
+    def expand_menu(self, name: str) -> "Sidebar":
         """只展开父菜单，不点击子项"""
         logger.info(f"侧边栏展开菜单: {name}")
         self._expand_parent(name)

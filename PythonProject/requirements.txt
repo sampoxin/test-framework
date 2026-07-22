@@ -1,4 +1,4 @@
-minium
+minium==1.6.0
 allure-pytest==2.16.0
 allure-python-commons==2.16.0
 attrs==26.1.0
@@ -10,6 +10,7 @@ execnet==2.1.2
 Faker==40.15.0
 idna==3.13
 iniconfig==2.3.0
+jsonschema==4.25.0
 locust==2.24.0
 packaging==26.2
 pluggy==1.6.0
@@ -20,10 +21,12 @@ pytest-benchmark==5.2.3
 pytest-cov==7.1.0
 pytest-dependency==0.6.1
 pytest-ordering==0.6
+pytest-rerunfailures==16.0
 pytest-xdist==3.8.0
-playwright
-pytest-playwright
+playwright==1.61.0
+pytest-playwright==0.8.0
 pymysql==1.1.1
+python-dotenv==1.2.2
 requests==2.33.1
 setuptools==82.0.1
 tzdata==2026.2

@@ -21,6 +21,10 @@
    # 然后重新导入配置
 """
 
+# 自动加载 .env 文件中的环境变量（敏感配置不硬编码在源码中）
+from dotenv import load_dotenv
+load_dotenv()
+
 # 从 environments.py 导入所有内容
 from config.environments import (
     Environment,           # 环境枚举

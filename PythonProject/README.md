@@ -1,434 +1,287 @@
+## 项目简介
+
+多端自动化测试工程，覆盖 **后台接口测试**、**后台管理系统 UI 测试**、**微信小程序测试** 和 **Locust 性能测试**，基于 pytest 统一运行。
+
+---
+
+## 目录结构
+
+```
+PythonProject/
+├── api/                          # API 层
+│   ├── client.py                 #   ApiClient - HTTP 传输层（session/重试/token）
+│   ├── base_api.py               #   BaseApi - API Object 基类
+│   └── three_way_match_api.py    #   ThreeWayMatchApi - 三单匹配业务 API（29个方法）
+│
+├── config/                       # 配置层
+│   ├── __init__.py               #   统一导出入口
+│   └── environments.py           #   多环境配置（dev/test/pre/prod）
+│
+├── utils/                        # 工具层
+│   ├── logger.py                 #   日志
+│   ├── db_helper.py              #   MySQL 数据库操作
+│   ├── file_helper.py            #   文件读写
+│   ├── dingtalk_notifier.py      #   钉钉通知
+│   ├── assemble_data.py          #   数据组装
+│   └── tools.py                  #   通用工具
+│
+├── testcases/                    # 测试用例
+│   ├── backend/                  #   后台接口测试（三单匹配/强制匹配/批量匹配）
+│   │   ├── conftest.py           #     测试数据 + API Object fixture + 数据清理
+│   │   ├── test_three_way_match.py
+│   │   ├── test_force_match.py
+│   │   ├── test_force_receive_invoice.py
+│   │   └── test_batch_match.py
+│   ├── web/                      #   后台管理系统 UI 测试（Playwright）
+│   │   └── test_receipt_invoice.py
+│   ├── miniapp/                  #   小程序测试（Minium）
+│   │   ├── test_personal.py
+│   │   └── test_user_info.py
+│   └── Client/                   #   C端接口测试（活动/优惠券/会员）
+│
+├── mini/                         # 小程序 Minium 配置
+│   ├── config.json               #   Minium 运行配置
+│   ├── suite.json                #   测试套件
+│   └── pages/                    #   Page Object
+│
+├── locust_tests/                 # Locust 性能测试
+│   ├── locustfile.py
+│   ├── core/                     #   负载模型
+│   └── tasks/                    #   任务定义
+│
+├── data/                         # 测试数据
+│   ├── test_data.json
+│   └── output/                   #   测试产出数据（用于数据清理）
+│
+├── scripts/                      # 脚本工具
+│   └── generate_report.py        #   Locust 报告生成
+│
+├── conftest.py                   # 全局 conftest（登录/通知/Allure）
+├── pytest.ini                    # pytest 配置
+├── run.py                        # 统一运行入口
+└── requirements.txt
+```
+
+---
+
 ## 快速开始
 
 ### 1. 安装依赖
 
 ```bash
 pip install -r requirements.txt
+playwright install chromium
 ```
 
 ### 2. 运行测试
 
 ```bash
-# 运行所有测试
-pytest -v
+# 运行全部用例（backend + miniapp + web）
+python run.py
 
-# 只运行冒烟测试
-pytest -m p0 -v
+# 仅运行后台接口测试
+python run.py backend
 
-# 运行核心测试
-pytest -m "p0 or p1" -v
+# 仅运行小程序测试
+python run.py miniapp
 
-# 排除边界测试
-pytest -m "not p3" -v
+# 仅运行后台管理系统 UI 测试
+python run.py web
+
+# 透传 pytest 参数
+python run.py web --slowmo=0          # Web 测试关闭慢速
+python run.py backend -v --tb=long    # 详细输出
 ```
 
-### 3. 切换测试环境
+也可以直接用 pytest：
 
 ```bash
-# 开发环境（默认）
-pytest -v
-
-# 测试环境
-TEST_ENV=test pytest -v
-
-# 生产环境（谨慎使用）
-TEST_ENV=prod pytest -v
+pytest testcases/backend/ -v                    # 后台接口
+pytest testcases/web/ -v                        # Web UI
+pytest testcases/miniapp/ -v --no-cov           # 小程序（需禁用 coverage）
+pytest -m p0 -v                                 # 仅冒烟
 ```
 
-### 4. 生成报告
+### 3. 切换环境
+
+通过环境变量 `LOCUST_ENV` 切换，默认 `dev`：
 
 ```bash
-# 生成 Allure 报告
-pytest --alluredir=reports/allure-results
+# Windows PowerShell
+$env:LOCUST_ENV="test"; python run.py backend
+
+# Linux/Mac
+LOCUST_ENV=test python run.py backend
+```
+
+| 环境 | 说明 |
+|------|------|
+| `dev` | 开发环境（默认） |
+| `test` | 测试环境 |
+| `pre` | 预发环境 |
+| `prod` | 生产环境（谨慎） |
+
+### 4. 查看报告
+
+```bash
+# Allure 报告
 allure serve reports/allure-results
 
-# 生成覆盖率报告
-pytest --cov=api --cov=utils --cov-report=html
-```
-
-### 5. 性能测试
-
-```bash
-# 运行基准测试
-pytest testcases/test_performance.py -v --benchmark
-
-# 生成基准测试报告
-pytest testcases/test_performance.py --benchmark-html=benchmark_report.html
+# 覆盖率报告（自动生成到 htmlcov/）
+open htmlcov/index.html
 ```
 
 ---
 
-## 小程序自动化测试（Minium）
+## 后台接口测试
 
-### 1. 运行命令
+### 架构分层
 
 ```
+ApiClient          → HTTP 传输层（session、重试、token、日志）
+  └─ BaseApi       → API Object 基类（统一 GET/POST）
+       └─ ThreeWayMatchApi  → 业务 API（29 个方法）
+```
+
+- `api/client.py` — 底层 HTTP 客户端，负责连接管理、自动重试（500/502/503）、请求日志
+- `api/base_api.py` — API Object 基类，提供 `_get()` / `_post()` 语义化入口
+- `api/three_way_match_api.py` — 业务层，封装发票管理、核票匹配、强制匹配、操作记录全部接口
+
+### 测试用例
+
+| 文件 | 场景 | 用例数 |
+|------|------|--------|
+| `test_three_way_match.py` | 人工匹配：收票→核票→匹配→推送结算 | 8 |
+| `test_force_match.py` | 强制匹配：收票→强制匹配→推送结算 | 6 |
+| `test_force_receive_invoice.py` | 强制收票：收/退货单→生成发票→推送结算 | 5 |
+| `test_batch_match.py` | 批量操作：批量收票→批量审核→批量匹配→批量推送 | 7 |
+
+### Fixture 体系
+
+```python
+match_api    # session 级，ThreeWayMatchApi 实例（统一业务 API）
+context      # session 级，用例间共享数据字典
+fixed_data   # session 级，测试数据源（发票号/收退货单号/供应商）
+file_helper  # session 级，写入 data/output 用于数据清理
+```
+
+---
+
+## Web UI 测试（Playwright）
+
+基于 Playwright + Ant Design 组件库，控件统一通过 **唯一 id** 定位。
+
+```bash
+python run.py web                       # 正常运行
+python run.py web --slowmo=0            # CI 模式（无延迟）
+python run.py web --slowmo=2000         # 调试模式（慢放观察）
+```
+
+`--slowmo` 默认 1000ms（pytest.ini 全局配置），命令行可覆盖。
+
+---
+
+## 小程序测试（Minium）
+
+### 运行方式
+
+```bash
+# pytest 模式（推荐）
+python run.py miniapp
+
+# Minium 原生模式
 python -m minium.framework.loader -c mini/config.json -s mini/suite.json
 ```
 
-### 2. 目录结构
+### 注意事项
 
-```
-mini/
-├── config.json          # Minium 配置文件
-├── suite.json           # 测试套件配置
-└── pages/
-    ├── base_page.py     # 页面基类
-    └── userinfo_page.py # 用户信息页 Page Object
-
-testcases/miniapp/
-└── test_user_info.py    # 小程序测试用例
-```
-
-### 3. 测试用例编写
-
-```python
-import minium
-from mini.pages.userinfo_page import UserInfoPage
-
-class TestMiniUserInfo(minium.MiniTest):
-    def setUp(self):
-        self.user_info_page = UserInfoPage(self)
-
-    def test_01_view_user_info_page(self):
-        self.user_info_page.open()
-        self.user_info_page.wait_for_user_info()
-        assert self.user_info_page.is_at_user_info_page()
-```
-
-### 4. 常见问题与处理
-
-#### 4.1 NutUI Picker 滚轮滑动
-
-NutUI Picker 的触摸事件需使用 `move()` 方法，并设置 `move_delay=500` 避免触发惯性动画导致确认按钮失效：
-
-```python
-picker.move(0, -36, move_delay=500, smooth=True)
-```
-
-
-#### 4.2 测试方法执行顺序
-
-Minium 按测试方法名的字母顺序执行，通过数字前缀控制顺序：
-
-```python
-def test_01_xxx(self): ...
-def test_02_xxx(self): ...
-```
-
-#### 4.3 页面状态保持
-
-Minium 默认每个测试方法前会重启小程序（由 `config.json` 中 `auto_relaunch` 控制）。若用例间需要保持页面状态，可在 `setUp` 中重新导航到目标页面。
+- 小程序测试包含 Minium 线程，**必须加 `--no-cov`** 避免卡死（run.py 已自动处理）
+- 用例执行顺序由方法名前缀控制（`test_01_` → `test_02_`），Minium 不支持 pytest-order
+- 每个用例前默认重启小程序（`config.json` 中 `auto_relaunch` 控制）
 
 ---
 
 ## Locust 性能测试
 
-### 1. 简介
-
-Locust 是一个基于 Python 的开源性能测试工具，支持：
-- 高并发模拟（基于 gevent 协程）
-- 代码定义用户行为
-- 实时 Web UI 监控
-- 分布式测试
-
-### 2. 目录结构
-
-```
-locust/
-├── __init__.py          # 模块导出
-└── demo.py              # 示例脚本
-```
-
-### 3. 运行 Locust
-
-#### 3.1 Web UI 模式（推荐）
+### 运行
 
 ```bash
-# 运行指定测试文件
-locust -f locust/test_marketing.py
+# Web UI 模式
+locust -f locust_tests/locustfile.py --host=https://dev-ocss-gateway.youdtj.com
 
-# 指定主机地址
-locust -f locustfile.py --host=https://dev-ocss-gateway.youdtj.com
+# 无头模式（CI/CD）
+locust -f locust_tests/locustfile.py --headless -u 100 -r 10 -t 5m
+
+# 生成报告
+python scripts/generate_report.py locust_tests/locustfile.py https://dev-ocss-gateway.youdtj.com
 ```
 
-打开浏览器访问 http://localhost:8089 进行交互式测试。
-
-#### 3.2 无头模式（CI/CD）
-
-```bash
-# 基本用法
-locust -f locustfile.py --headless -u 100 -r 10 -t 5m
-
-# 指定用户类
-locust -f locustfile.py --headless -u 100 -r 10 -t 5m --users MemberUser
-
-# 只显示摘要
-locust -f locustfile.py --headless -u 50 -r 5 -t 2m --only-summary
-```
-
-#### 3.3 分布式测试
-
-```bash
-# Master 节点（控制节点）
-locust -f locustfile.py --master --master-port=5557
-
-# Worker 节点（执行节点）
-locust -f locustfile.py --worker --master-host=127.0.0.1 --master-port=5557
-
-# 等待所有 Worker 连接
-locust -f locustfile.py --master --headless -u 1000 -r 50 --expect-workers=3
-```
-
-### 4. 常用参数说明
+### 常用参数
 
 | 参数 | 说明 | 示例 |
-| :--- | :--- | :--- |
-| `-f` | 指定测试文件 | `-f locustfile.py` |
-| `--headless` | 无界面模式 | `--headless` |
+|------|------|------|
+| `-f` | 测试脚本 | `-f locust_tests/locustfile.py` |
+| `--headless` | 无界面模式 | |
 | `-u` | 虚拟用户数 | `-u 100` |
 | `-r` | 每秒启动用户数 | `-r 10` |
-| `-t` | 测试持续时间 | `-t 5m` |
+| `-t` | 持续时间 | `-t 5m` |
 | `--host` | 目标主机 | `--host=https://api.example.com` |
-| `--users` | 指定用户类 | `--users MemberUser` |
-| `--tags` | 只运行指定标签 | `--tags website` |
-| `--exclude-tags` | 排除指定标签 | `--exclude-tags api` |
-| `--only-summary` | 只显示摘要报告 | `--only-summary` |
-| `--master` | 启动 Master 节点 | `--master` |
-| `--worker` | 启动 Worker 节点 | `--worker` |
-| `--master-host` | Master 节点地址 | `--master-host=192.168.1.100` |
-| `--master-port` | Master 节点端口 | `--master-port=5557` |
-| `--expect-workers` | 等待 Worker 数量 | `--expect-workers=3` |
-
-### 5. 核心概念
-
-#### 5.1 HttpUser（虚拟用户）
-
-```python
-from locust import HttpUser, task, between
-
-class MyUser(HttpUser):
-    host = "https://api.example.com"
-    wait_time = between(1, 3)  # 任务间隔 1-3 秒
-    
-    @task(3)  # 权重为3
-    def get_profile(self):
-        self.client.get("/api/user/profile")
-    
-    @task(1)  # 权重为1
-    def update_profile(self):
-        self.client.post("/api/user/update", json={"name": "Test"})
-```
-
-#### 5.2 TaskSet（任务集合）
-
-```python
-from locust import TaskSet
-
-class MemberBehavior(TaskSet):
-    def on_start(self):
-        """用户初始化（如登录）"""
-        self.client.post("/api/login", json={"user": "test"})
-    
-    @task
-    def browse(self):
-        self.client.get("/api/products")
-```
-
-#### 5.3 SequentialTaskSet（顺序任务）
-
-```python
-from locust import SequentialTaskSet
-
-class ShoppingFlow(SequentialTaskSet):
-    @task
-    def step1_browse(self):
-        self.client.get("/api/products")
-    
-    @task
-    def step2_add_cart(self):
-        self.client.post("/api/cart/add")
-```
-
-### 6. 性能指标解读
-
-| 指标 | 说明 | 参考值 |
-| :--- | :--- | :--- |
-| RPS | 每秒请求数 | 越高越好 |
-| Avg | 平均响应时间 | < 200ms |
-| Med | 中位数响应时间 | 接近 Avg |
-| 95% | 95%请求响应时间 | < 500ms |
-| 99% | 99%请求响应时间 | < 1s |
-| Fail% | 失败率 | < 1% |
-
-### 7. 测试策略
-
-```bash
-# 基准测试（稳定负载）
-locust -f locustfile.py --headless -u 50 -r 5 -t 10m
-
-# 负载测试（逐步加压）
-locust -f locust/load_test.py --headless -t 5m
-
-# 压力测试（极端负载）
-locust -f locustfile.py --headless -u 500 -r 50 -t 2m
-
-# 稳定性测试（长时间运行）
-locust -f locustfile.py --headless -u 100 -r 2 -t 1h
-```
 
 ---
 
-## 测试用例编写规范
+## 钉钉通知
 
-### 1. 数据驱动测试
+测试完成后自动推送结果到钉钉群。
 
-在 `data/test_data.json` 中添加测试数据：
+### 配置
 
-```json
-{
-  "member_update": [
-    {
-      "case_name": "更新名称-正常",
-      "request_data": {"memberName": "TestUser"},
-      "expected_code": "Success",
-      "mark": "p0"
-    }
-  ]
-}
+```bash
+# Windows PowerShell
+$env:DINGTALK_WEBHOOK="https://oapi.dingtalk.com/robot/send?access_token=xxx"
+$env:DINGTALK_SECRET="SECxxx"    # 加签模式（可选）
+
+# Linux/Mac
+export DINGTALK_WEBHOOK="https://oapi.dingtalk.com/robot/send?access_token=xxx"
 ```
 
-### 2. 测试级别标记
+GitHub Actions 中在 Settings → Secrets 添加 `DINGTALK_WEBHOOK` 即可。
 
-| 标记 | 级别 | 描述 |
-| :--- | :--- | :--- |
-| `@pytest.mark.p0` | P0 | 冒烟测试，核心功能 |
-| `@pytest.mark.p1` | P1 | 核心测试，主要流程 |
-| `@pytest.mark.p2` | P2 | 功能测试，次要功能 |
-| `@pytest.mark.p3` | P3 | 边界测试，边缘场景 |
+### 通知效果
 
-### 3. Fixture 使用
+- 通过：绿色报告
+- 失败：红色报告，@所有人
 
-```python
-def test_member_info(self, client, context):
-    """使用 client fixture 发送请求"""
-    resp = client.send("GET", "/api/v1/wx-mini/member/profile")
-    assert resp.json()["code"] == "Success"
-```
+---
 
 ## CI/CD 集成
 
 ```yaml
-# .gitlab-ci.yml
-stages:
-  - smoke
-  - regression
-  - performance
+# .github/workflows/test.yml
+name: Test
+on: [push, pull_request]
 
-smoke_test:
-  stage: smoke
-  script:
-    - pytest -m p0 --tb=short
-  only:
-    - merge_requests
-
-regression_test:
-  stage: regression
-  script:
-    - pytest -m "p0 or p1" --cov=api --cov-report=html
-  only:
-    - develop
-
-performance_test:
-  stage: performance
-  script:
-    - pytest testcases/test_performance.py --benchmark
-    - locust -f locust/load_test.py --headless -u 100 -r 10 -t 5m --only-summary
-  only:
-    - tags
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pytest testcases/backend/ -m p0 --tb=short
+        env:
+          DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
 ```
 
-## 钉钉通知配置
+---
 
-### 配置方法
+## 测试标记
 
-1. 在钉钉群中添加自定义机器人（群设置 -> 智能群助手 -> 添加机器人）
-2. 复制 Webhook 地址
-3. 配置环境变量
-
-### 使用方式
-
-**本地测试：**
-```bash
-# Windows PowerShell
-$env:DINGTALK_WEBHOOK="https://oapi.dingtalk.com/robot/send?access_token=xxx"
-pytest -m p0 -v
-
-# Linux/Mac
-export DINGTALK_WEBHOOK="https://oapi.dingtalk.com/robot/send?access_token=xxx"
-pytest -m p0 -v
-```
-
-**GitHub Actions:**
-在仓库 Settings -> Secrets and variables -> Actions 中添加 Secret:
-- `DINGTALK_WEBHOOK`: 钉钉机器人 Webhook 地址
-
-### 通知效果
-
-- 测试通过：显示绿色报告，不@所有人
-- 测试失败：显示红色报告，@所有人
-
-### 自定义通知
-
-```python
-from utils.dingtalk_notifier import DingTalkNotifier
-
-notifier = DingTalkNotifier(webhook_url="https://oapi.dingtalk.com/robot/send?access_token=xxx")
-
-# 发送文本
-notifier.send_text("测试消息")
-
-# 发送Markdown
-notifier.send_markdown("标题", "**内容**")
-
-# 发送测试报告
-notifier.send_test_report({
-    "passed": 10,
-    "failed": 0,
-    "skipped": 1,
-    "total": 11,
-    "duration": 15.5,
-    "env": "dev"
-})
-```
-
-## 配置说明
-
-### test.yaml 配置项
-
-| 配置项 | 说明 | 默认值 |
-| :--- | :--- | :--- |
-| `env.default` | 默认环境 | dev |
-| `servers.*.url` | 服务地址 | - |
-| `servers.*.timeout` | 请求超时 | 30s |
-| `parallel.workers` | 并行进程数 | 2 |
-| `report.allure_dir` | Allure 报告目录 | reports/allure |
-
-## 注意事项
-
-1. 运行并行测试时，确保测试用例之间无共享状态
-2. 生产环境测试需谨慎，建议使用独立的测试账号
-3. 性能测试会产生大量请求，避免在生产环境频繁运行
-4. Locust 测试建议使用独立的测试环境，避免影响线上服务
-
-## 维护人员
-
-- 测试开发团队
-
-## 版本历史
-
-- v1.0.0: 初始版本
-- v1.1.0: 添加数据驱动测试
-- v1.2.0: 支持并行测试
-- v1.3.0: 添加性能测试支持
-- v1.4.0: 集成 Locust 性能测试框架
+| 标记 | 说明 |
+|------|------|
+| `@pytest.mark.p0` | 冒烟测试，核心功能 |
+| `@pytest.mark.p1` | 核心测试，主要流程 |
+| `@pytest.mark.p2` | 功能测试，次要功能 |
+| `@pytest.mark.p3` | 边界测试，边缘场景 |
+| `@pytest.mark.skip_login` | 跳过小程序自动登录 |

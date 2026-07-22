@@ -12,31 +12,37 @@ if __name__ == "__main__":
     #   python run.py web                # 仅运行后台管理系统UI测试
     #   python run.py web --slowmo=0     # Web 测试关闭慢速（CI 模式）
     #   python run.py web --slowmo=500   # Web 测试加大延迟（调试观察）
-    #   python run.py miniapp            # 仅运行小程序测试
-    #   python run.py backend            # 仅运行后台接口测试
+    #   python run.py miniapp            # 仅运行小程序UI测试
+    #   python run.py backend            # 仅运行小程序接口测试
+    #   python run.py mini_client        # 仅运行小程序接口测试
     #
     # 注意：--slowmo=100 已在 pytest.ini addopts 中全局配置，
     #       命令行传 --slowmo=N 可覆盖默认值
     args = sys.argv[1:]
 
     # 分离测试类型选择器和 pytest 透传参数（以 - 开头的参数透传给 pytest）
-    TEST_TYPES = {"web", "miniapp", "backend"}
+    TEST_TYPES = {"web", "miniapp", "backend", "mini_client"}
     passthrough_args = [a for a in args if a.startswith("-")]
+
+    # 后台管理系统 UI 测试用例
+    test_case_web = ["testcases/web/test_receipt_invoice.py"]
 
     # 后端接口测试用例
     test_case_backend = [
-        "testcases/backend/test_force_receive_invoice.py",
-        "testcases/backend/test_three_way_match.py"
+        "testcases/backend/"
     ]
 
-    # 小程序测试用例
+    # 小程序UI测试用例
     test_case_miniapp = [
         "testcases/miniapp/test_personal.py",
         "testcases/miniapp/test_user_info.py",
     ]
+    # 小程序接口测试用例
+    test_case_mini_client = [
+        "testcases/mini_client/test_member.py",
+    ]
 
-    # 后台管理系统 UI 测试用例
-    test_case_web = ["testcases/web/test_receipt_invoice.py"]
+
 
     if "web" in args:
         test_case = test_case_web
@@ -44,8 +50,10 @@ if __name__ == "__main__":
         test_case = test_case_miniapp
     elif "backend" in args:
         test_case = test_case_backend
+    elif "mini_client" in args:
+        test_case = test_case_mini_client
     else:
-        test_case = test_case_backend + test_case_miniapp + test_case_web
+        test_case = test_case_backend + test_case_miniapp + test_case_web + test_case_mini_client
 
     pytest_args = [
         *test_case,
