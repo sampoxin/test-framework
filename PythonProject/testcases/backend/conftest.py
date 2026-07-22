@@ -19,13 +19,12 @@ OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file
 @pytest.fixture(scope="session")
 def fixed_data():
     """发票编号 - 全局唯一数据源，conftest和测试用例共用"""
-    return {"data_1": {"invoice_nos": ["26922000000673529101"],"receipt_nos":["PO99487990000237"],"return_nos":[],"supplier_name":"宝宝兄弟(青岛)食品有限公司"},
-            "data_2": {"invoice_nos": ["26312000003454746196"],"receipt_nos":["PO99487990000228"],"return_nos":[],"supplier_name":"上海英联食品饮料有限公司"},
-            "data_3": {"invoice_nos": [],"receipt_nos":["PO99487990000234"],"return_nos":["RO99487990000113"],"supplier_name":"上海英联食品饮料有限公司"},
-            "data_4": {"invoice_nos": ["26312000003662642431","26312000003776282536"],"receipt_nos":["PO99487990000243"],"return_nos":["RO99487990000110"],"supplier_name":"上海英联食品饮料有限公司"},
-            "data_5": {"invoice_nos": ["26312000003216369376"],"receipt_nos":["PO99487990000217"],"return_nos":[],"supplier_name":"上海英联食品饮料有限公司"}
+    return {"data_1": {"test_class": "三单匹配","invoice_nos": ["26922000000673529101"],"receipt_nos":["PO99487990000237"],"return_nos":[],"supplier_name":"宝宝兄弟(青岛)食品有限公司"},
+            "data_2": {"test_class": "强制匹配","invoice_nos": ["26312000003454746196"],"receipt_nos":["PO99487990000228"],"return_nos":[],"supplier_name":"上海英联食品饮料有限公司"},
+            "data_3": {"test_class": "强制收票","invoice_nos": [],"receipt_nos":["PO99487990000234"],"return_nos":["RO99487990000113"],"supplier_name":"上海英联食品饮料有限公司"},
+            "data_4": {"test_class": "批量匹配对冲","invoice_nos": ["26312000003662642431","26312000003776282536"],"receipt_nos":["PO99487990000243"],"return_nos":["RO99487990000110"],"supplier_name":"上海英联食品饮料有限公司"},
+            "data_5": {"test_class": "强制匹配","invoice_nos": ["26312000003216369376"],"receipt_nos":["PO99487990000217"],"return_nos":[],"supplier_name":"上海英联食品饮料有限公司"}
         }
-
 
 @pytest.fixture(scope="class", autouse=True)
 def setup_test_data(request, fixed_data):
@@ -111,9 +110,24 @@ def _extract_match_ids_from_latest_file():
     logger.info(f"[清理] 从文件中提取到 matchIds: {match_ids}")
     return match_ids
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def file_helper():
     return FileHelper()
+
+
+# ==================== API Object Fixtures ====================
+
+@pytest.fixture(scope="session")
+def match_api(admin_client):
+    """三单匹配业务统一 API（发票 + 核票 + 强制匹配 + 操作记录）"""
+    from api.three_way_match_api import ThreeWayMatchApi
+    return ThreeWayMatchApi(admin_client)
+
+
+@pytest.fixture(scope="session")
+def context():
+    """后台测试共享上下文，用于用例间传递数据（session级避免pytest-order跨类切换导致重建）"""
+    return {}
 
 if __name__ == "__main__":
     _extract_match_ids_from_latest_file()

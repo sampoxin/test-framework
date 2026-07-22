@@ -50,6 +50,7 @@ ENVIRONMENTS = {
     Environment.DEV: {
         "name": "开发环境",
         "base_url": "https://dev-ocss-gateway.youdtj.com",
+        "admin_url": "https://dev-ocss.youdtj.com",
         "questionnaire_id": 590,
         "activity_id": 471,
         "timeout": 30,
@@ -67,6 +68,7 @@ ENVIRONMENTS = {
     Environment.TEST: {
         "name": "测试环境",
         "base_url": "https://dev-ocss-gateway.youdtj.com",
+        "admin_url": "https://dev-ocss.youdtj.com",
         "questionnaire_id": 582,
         "activity_id": 100,
         "timeout": 30,
@@ -84,6 +86,7 @@ ENVIRONMENTS = {
     Environment.PRE: {
         "name": "预发环境",
         "base_url": "https://pre-ocss-gateway.youdtj.com",
+        "admin_url": "https://pre-admin.youdtj.com",
         "questionnaire_id": 582,
         "activity_id": 100,
         "timeout": 20,
@@ -94,6 +97,7 @@ ENVIRONMENTS = {
     Environment.PROD: {
         "name": "生产环境",
         "base_url": "https://prod-ocss-gateway.youdtj.com",
+        "admin_url": "https://admin.youdtj.com",
         "questionnaire_id": 582,
         "activity_id": 100,
         "timeout": 15,

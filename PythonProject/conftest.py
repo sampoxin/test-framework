@@ -138,7 +138,3 @@ def admin_client():
     })
     yield client
 
-
-@pytest.fixture(scope="class")
-def context():
-    return {}

@@ -38,6 +38,7 @@ _current_config = get_config()
 
 # 导出常用配置（直接可用）
 BASE_URL = _current_config["base_url"]          # API地址
+ADMIN_URL = _current_config.get("admin_url", "")  # 后台管理系统地址
 QUESTIONNAIRE_ID = _current_config["questionnaire_id"]  # 问卷ID
 ACTIVITY_ID = _current_config["activity_id"]    # 活动ID
 TIMEOUT = _current_config["timeout"]            # 超时时间
@@ -63,6 +64,7 @@ __all__ = [
     
     # 配置项
     'BASE_URL',
+    'ADMIN_URL',
     'QUESTIONNAIRE_ID',
     'ACTIVITY_ID',
     'TIMEOUT',

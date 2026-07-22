@@ -21,6 +21,8 @@ pytest-cov==7.1.0
 pytest-dependency==0.6.1
 pytest-ordering==0.6
 pytest-xdist==3.8.0
+playwright
+pytest-playwright
 pymysql==1.1.1
 requests==2.33.1
 setuptools==82.0.1
