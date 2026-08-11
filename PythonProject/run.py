@@ -12,12 +12,14 @@ if __name__ == "__main__":
     #   python run.py web                # 仅运行后台管理系统UI测试
     #   python run.py web --slowmo=0     # Web 测试关闭慢速（CI 模式）
     #   python run.py web --slowmo=500   # Web 测试加大延迟（调试观察）
+    #   python run.py backend            # 仅运行后端接口测试
+    #   python run.py backend --api-think-time=500  # API 请求后等待 500 毫秒
     #   python run.py miniapp            # 仅运行小程序UI测试
-    #   python run.py backend            # 仅运行小程序接口测试
     #   python run.py mini_client        # 仅运行小程序接口测试
     #
-    # 注意：--slowmo=100 已在 pytest.ini addopts 中全局配置，
-    #       命令行传 --slowmo=N 可覆盖默认值
+    # 注意：--slowmo 默认配置在 testcases/web/conftest.py 中（默认 1000ms），
+    #       命令行传 --slowmo=N 可覆盖默认值；
+    #       --api-think-time 用于控制纯 API 测试的请求后等待时间（单位毫秒，默认 0）。
     args = sys.argv[1:]
 
     # 分离测试类型选择器和 pytest 透传参数（以 - 开头的参数透传给 pytest）
@@ -34,15 +36,12 @@ if __name__ == "__main__":
 
     # 小程序UI测试用例
     test_case_miniapp = [
-        "testcases/miniapp/test_personal.py",
-        "testcases/miniapp/test_user_info.py",
+        "testcases/miniapp/test_takeout.py"
     ]
     # 小程序接口测试用例
     test_case_mini_client = [
         "testcases/mini_client/test_member.py",
     ]
-
-
 
     if "web" in args:
         test_case = test_case_web

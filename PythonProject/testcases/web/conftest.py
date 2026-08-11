@@ -7,7 +7,7 @@ pytest-playwright 自动提供以下内置 fixture:
     - context: 会话级 BrowserContext 实例
 
 全局速度控制：
-    --slowmo N    每个 Playwright 操作后等待 N 毫秒（默认 100）
+    --slowmo N    每个 Playwright 操作后等待 N 毫秒（默认 1000）
                   调试时可加大，如: pytest testcases/web/ --slowmo 500
                   CI 可关闭，如: pytest testcases/web/ --slowmo 0
                   注意：此选项仅影响 Playwright 操作，不影响 API/小程序测试
@@ -28,7 +28,7 @@ def browser_type_launch_args(browser_type_launch_args, request):
     浏览器启动参数
     --slowmo N 由 pytest-playwright 内置提供，控制每个操作后的等待毫秒数
     """
-    slow_mo = int(request.config.getoption("--slowmo", default=500))
+    slow_mo = int(request.config.getoption("--slowmo", default=1000))
     logger.info(f"Playwright slow_mo = {slow_mo}ms")
     return {
         **browser_type_launch_args,

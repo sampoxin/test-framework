@@ -1,8 +1,8 @@
 import os
 
-import minium
 import pytest
 import allure
+from testcases.miniapp.base_test import MiniAppBase
 from mini.pages.login_page import LoginPage
 from mini.pages.personal_page import PersonalPage
 from utils.logger import logger
@@ -10,7 +10,7 @@ from utils.logger import logger
 
 @allure.story("登录功能")
 @pytest.mark.skip_login
-class TestMiniLogin(minium.MiniTest):
+class TestMiniLogin(MiniAppBase):
     """登录功能测试"""
 
     def setUp(self):

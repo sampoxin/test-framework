@@ -3,6 +3,10 @@
     {
       "pkg": "testcases.miniapp.test_user_info",
       "case_list": ["test_*"]
+    },
+    {
+      "pkg": "testcases.miniapp.test_takeout",
+      "case_list": ["test_*"]
     }
   ]
 }

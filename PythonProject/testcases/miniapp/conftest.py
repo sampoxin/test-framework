@@ -31,7 +31,7 @@ MiniTest.CONFIG = MiniConfig.from_file(_mini_config_path)
 
 
 # ============================================================
-# 会话级登录状态标记：只在首个非 skip_login 用例时检查一次
+# 会话级登录状态标记：整个测试会话只检查一次（re_launch 不清除登录态）
 # ============================================================
 _session_logged_in = False
 
@@ -41,7 +41,7 @@ def _ensure_logged_in(request):
     """
     会话级自动登录检查：
     - 仅在首个非 skip_login 用例执行时检查登录状态
-    - 后续用例直接跳过，避免每个用例都跳转个人中心页
+    - 后续用例直接跳过（re_launch 后登录态仍保留）
     - 在测试类或方法上添加 @pytest.mark.skip_login 可跳过自动登录
     """
     global _session_logged_in

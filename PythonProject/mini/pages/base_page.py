@@ -104,14 +104,42 @@ class BasePage:
     # ========== 页面元素判断 ==========
 
     def is_visible(self, selector: str, inner_text: Optional[str] = None) -> bool:
-        """判断元素是否可见"""
+        """判断元素是否可见
+
+        minium 元素没有 is_visible() 方法，这里通过计算样式 + 尺寸判断：
+        - display != none 且 visibility != hidden 且 opacity != 0
+        - 宽高均大于 0
+        """
         element = self.find_element(selector, inner_text)
-        return element is not None and element.is_visible()
+        if element is None:
+            return False
+        try:
+            display, visibility, opacity = element.styles(["display", "visibility", "opacity"])
+            if display == "none" or visibility == "hidden":
+                return False
+            if opacity not in (None, "") and float(opacity) == 0:
+                return False
+        except Exception as e:
+            logger.warning(f"获取元素样式失败，降级为尺寸判断: {e}")
+        try:
+            size = element.size
+            return size.width > 0 and size.height > 0
+        except Exception as e:
+            logger.warning(f"获取元素尺寸失败: {e}")
+            return True  # 元素存在但取不到尺寸，视为可见
 
     def is_enabled(self, selector: str, inner_text: Optional[str] = None) -> bool:
-        """判断元素是否可点击"""
+        """判断元素是否可点击（minium 无 is_enabled()，通过 disabled 属性判断）"""
         element = self.find_element(selector, inner_text)
-        return element is not None and element.is_enabled()
+        if element is None:
+            return False
+        try:
+            disabled = element.attribute("disabled")
+            if isinstance(disabled, (list, tuple)):
+                disabled = disabled[0] if disabled else None
+            return str(disabled).lower() not in ("true", "disabled")
+        except Exception:
+            return True  # 无 disabled 属性视为可用
 
     def is_exists(self, selector: str, inner_text: Optional[str] = None) -> bool:
         """判断元素是否存在"""
@@ -148,8 +176,32 @@ class BasePage:
 
     @allure.step("滚动到元素: {selector}")
     def scroll_to_view(self, selector: str, inner_text: Optional[str] = None) -> "BasePage":
-        """滚动到元素可见"""
+        """滚动使元素可见
+
+        minium 没有 scroll_into_view() 方法，这里根据元素类型做兼容：
+        - scroll-view 元素：调用 element.scroll_to(0, 0) 触发其父级滚动
+        - 普通元素：通过 call_func 执行 element.scrollIntoView({block:'center'})
+        若上述均失败，则作为兜底不做任何操作（由用例层保证）
+        """
         element = self.find_element(selector, inner_text)
-        if element:
-            element.scroll_into_view()
+        if element is None:
+            return self
+
+        # 优先尝试调用原生 scrollIntoView
+        try:
+            element.call_func("scrollIntoView", [{"block": "center"}])
+            time.sleep(0.5)
+            return self
+        except Exception as e:
+            logger.warning(f"call_func scrollIntoView 失败，降级为 scroll_to: {e}")
+
+        # 降级：scroll-view 直接调 scroll_to
+        try:
+            if getattr(element, "_tag_name", "") == "scroll-view":
+                element.scroll_to(0, 0)
+            else:
+                element.scroll_to(0, 0)
+            time.sleep(0.5)
+        except Exception as e:
+            logger.warning(f"scroll_to 兜底失败: {e}")
         return self

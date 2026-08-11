@@ -11,3 +11,4 @@ htmlcov/
 locust_tests/study/
 PythonProject/data/output/
 PythonProject/outputs/
+PythonProject/scripts/overtime_*

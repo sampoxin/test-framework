@@ -119,7 +119,7 @@ class TestForceReceiveInvoice:
             result_json = match_api.pre_check_settlement(match_ids[0], supplier_id)
             has_pending_red_invoices = result_json["data"].get("hasPendingRedInvoice", False)
 
-        if push_status == 0:
+        if push_status == 0 or push_status is None:
             with allure.step("步骤3：推送结算单"):
                 if not has_pending_red_invoices:
                     match_api.push_settlement(match_ids[0])

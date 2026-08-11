@@ -1,6 +1,6 @@
-import minium
 import pytest
 import allure
+from testcases.miniapp.base_test import MiniAppBase
 from mini.pages.personal_page import PersonalPage
 from mini.pages.login_page import LoginPage
 from mini.pages.userinfo_page import UserInfoPage
@@ -8,7 +8,7 @@ from utils.logger import logger
 
 
 @allure.story("个人中心")
-class TestMiniPersonal(minium.MiniTest):
+class TestMiniPersonal(MiniAppBase):
     """个人中心功能测试"""
 
     def setUp(self):

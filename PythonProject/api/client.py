@@ -3,48 +3,19 @@ import requests
 from typing import Any, Dict, List, Optional, Callable
 from functools import wraps
 from config import TENANT
-from utils.logger import logger
+from utils.logger import logger, mask_dict
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from api.exceptions import HttpError, BusinessError, AuthExpiredError
 
 
-# ==================== 日志脱敏 ====================
-
-_SENSITIVE_KEYS = frozenset({
-    "password", "authToken", "token", "secret",
-    "mmhm-token", "auth-token", "x-user", "authorization",
-    "ADMIN_PASSWORD", "DB_PASSWORD",
-})
-
-
-def _mask_value(value: Any) -> str:
-    """对敏感值脱敏：保留前2后2字符"""
-    if isinstance(value, str) and len(value) > 6:
-        return value[:2] + "***" + value[-2:]
-    return "***"
-
-
-def _mask_dict(obj: Any) -> Any:
-    """递归脱敏 dict/list 中的敏感字段"""
-    if isinstance(obj, dict):
-        return {
-            k: _mask_value(v) if k.lower() in {s.lower() for s in _SENSITIVE_KEYS}
-            else _mask_dict(v)
-            for k, v in obj.items()
-        }
-    if isinstance(obj, list):
-        return [_mask_dict(item) for item in obj]
-    return obj
-
-
 class ApiClient:
-    def __init__(self, base_url: str, timeout: int, think_time: int = 0):
+    def __init__(self, base_url: str, timeout: int, think_time: float = 0):
         self.base_url: str = base_url
         self.timeout: int = timeout
         self.history: List[Dict[str, Any]] = []
         self.logger = logger
-        self.think_time: int = think_time
+        self.think_time: float = think_time
 
         # Token 刷新：外部设置此回调，401 时自动调用
         self._login_callback: Optional[Callable] = None
@@ -83,16 +54,16 @@ class ApiClient:
             start_time = time.time()
             url = self.base_url + path
             method = method.upper()
-            # 日志脱敏：请求参数
-            safe_params = _mask_dict(params)
+            # 日志脱敏：请求参数（SensitiveFilter 兜底防护）
+            safe_params = mask_dict(params)
             self.logger.info(f"开始请求: [{method}] {url} params={safe_params}")
 
             try:
                 response = func(self, method, url, **params)
                 elapsed = time.time() - start_time
                 try:
-                    # 日志脱敏：响应体
-                    safe_resp = _mask_dict(response.json())
+                    # 日志脱敏：响应体（SensitiveFilter 兜底防护）
+                    safe_resp = mask_dict(response.json())
                     self.logger.info(f"[{method}] {url} 响应结果:{safe_resp} 耗时:{elapsed:.3f}s")
                 except ValueError:
                     self.logger.info(f"[{method}] {url} 响应非JSON 耗时:{elapsed:.3f}s")

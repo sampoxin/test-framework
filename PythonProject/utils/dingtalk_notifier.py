@@ -91,61 +91,95 @@ class DingTalkNotifier:
 
     def send_test_report(self, test_result: Dict) -> bool:
         """
-        发送测试报告
+        发送测试报告（4块结构：标题 / 指标 / 模块统计 / 失败用例）
 
         Args:
             test_result: 测试结果字典
                 {
+                    "title": "后台接口自动化测试",
                     "passed": 10,
                     "failed": 2,
                     "skipped": 1,
                     "total": 13,
                     "duration": 15.5,
-                    "env": "dev"
+                    "env": "dev",
+                    "modules": {"后台接口": {"passed": 5, "failed": 1, "skipped": 0, "total": 6}},
+                    "failed_cases": ["[后台接口] test_xxx"]
                 }
         """
         if not self.enabled:
             logger.warning("钉钉未配置，跳过通知")
             return False
 
+        report_title = test_result.get("title", "自动化测试")
         passed = test_result.get("passed", 0)
         failed = test_result.get("failed", 0)
         skipped = test_result.get("skipped", 0)
         total = test_result.get("total", 0)
         duration = test_result.get("duration", 0)
         env = test_result.get("env", "unknown")
+        modules = test_result.get("modules", {})
+        failed_cases = test_result.get("failed_cases", [])
 
         success_rate = (passed / total * 100) if total > 0 else 0
-
-        color = "#00FF00" if failed == 0 else "#FF0000"
         status = "✅ 通过" if failed == 0 else "❌ 失败"
 
-        markdown_text = f"""
-# 📊 自动化测试报告
+        # 耗时格式化：超过60秒显示 分+秒
+        if duration >= 60:
+            duration_str = f"{int(duration // 60)}分{duration % 60:.0f}秒"
+        else:
+            duration_str = f"{duration:.1f}秒"
 
-> **测试环境:** {env}
-> **测试状态:** {status}
+        # 第1块：标题（手机端不渲染表格，统一使用引用行保证排版）
+        lines = [
+            f"## 📊 {report_title}",
+            "",
+            f"> 环境：{env}　|　结果：{status}",
+            "",
+            "---",
+        ]
 
----
+        # 第2块：指标
+        lines += [
+            "",
+            "**📈 执行指标**",
+            "",
+            f"- 总用例：{total}",
+            f"- ✅ 成功：{passed}",
+            f"- ❌ 失败：{failed}",
+            f"- ⏭ 跳过：{skipped}",
+            f"- 📊 通过率：{success_rate:.1f}%",
+            f"- ⏱ 耗时：{duration_str}",
+            "",
+            "---",
+        ]
 
-## 📈 测试统计
+        # 第3块：模块统计
+        if modules:
+            lines += ["", "**🗂 模块统计**", ""]
+            for name, stat in modules.items():
+                icon = "✅" if stat.get("failed", 0) == 0 else "❌"
+                lines.append(
+                    f"- {icon} {name}：{stat.get('total', 0)}条 "
+                    f"(成功{stat.get('passed', 0)} / 失败{stat.get('failed', 0)} / 跳过{stat.get('skipped', 0)})"
+                )
+            lines += ["", "---"]
 
-| 指标 | 数值 |
-|------|------|
-| **总用例数** | {total} |
-| **✅ 通过** | {passed} |
-| **❌ 失败** | {failed} |
-| **⏭️ 跳过** | {skipped} |
-| **📊 通过率** | {success_rate:.1f}% |
-| **⏱️ 耗时** | {duration:.1f}s |
+        # 第4块：失败用例（最多显示5条）
+        if failed_cases:
+            lines += ["", "**🚨 失败用例**", ""]
+            for i, case in enumerate(failed_cases[:5], 1):
+                lines.append(f"{i}. {case}")
+            if len(failed_cases) > 5:
+                lines.append(f"> 仅展示前5条，共 {len(failed_cases)} 条失败")
+            lines += ["", "---"]
 
----
+        lines += ["", f"📅 {test_result.get('date', '')}"]
 
-📅 {test_result.get('date', '')}
-        """.strip()
+        markdown_text = "\n".join(lines)
 
         return self.send_markdown(
-            title=f"自动化测试报告 - {'通过' if failed == 0 else '失败'}",
+            title=f"{report_title} - {'通过' if failed == 0 else '失败'}",
             text=markdown_text,
             is_at_all=failed > 0
         )

@@ -6,7 +6,7 @@ from utils.assemble_data import get_item_code
 
 @allure.epic("三单匹配")
 @allure.feature("收票核票")
-@pytest.mark.parametrize("setup_test_data", ["data_1"], indirect=True)
+@pytest.mark.parametrize("setup_test_data", ["data_1","data_8","data_9"], indirect=True)
 class TestThreeWayMatch:
 
     @allure.story("收票")
@@ -164,11 +164,12 @@ class TestThreeWayMatch:
             result_json = match_api.pre_check_settlement(match_id, invoice_supplier_id)
             has_pending_red_invoices = result_json["data"].get("hasPendingRedInvoice", False)
 
-        if push_status == 0:
+        if push_status == 0 or push_status is None:
             with allure.step("步骤3：推送结算单"):
                 if not has_pending_red_invoices:
                     match_api.push_settlement(match_id)
                 else:
+                    file_helper.append_json({"matchId": match_id,"invoiceNo": self.invoice_nos,"settleNo": "存在未结算红票，需要走红蓝对冲"}, "test.json")
                     pytest.skip("存在未结算红票，需要走红蓝对冲")
 
         with allure.step("步骤4：查询核票详情-验证推送结果"):
